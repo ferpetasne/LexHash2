@@ -213,7 +213,7 @@ body{min-height:100vh;min-height:-webkit-fill-available;background:var(--bg);col
           <label class="tog"><input type="checkbox" id="use-rfc" checked><div class="tog-track"></div><div class="tog-thumb"></div></label>
         </div>
         <div class="opt-row"><span class="opt-lbl">Geolocalizaci&#243;n</span>
-          <label class="tog"><input type="checkbox" id="use-geo" checked><div class="tog-track"></div><div class="tog-thumb"></div></label>
+          <label class="tog"><input type="checkbox" id="use-geo"><div class="tog-track"></div><div class="tog-thumb"></div></label>
         </div>
         <div class="meta-row"><span class="meta-lbl" style="min-width:70px">Expediente</span>
           <input class="meta-inp" id="i-exp" type="text" placeholder="N&#xBA; o car&#225;tula (opcional)">
@@ -328,8 +328,7 @@ async function capturePhoto(){
   ctx.fillText('LexHash * '+ts,10,canvas.height-12);
   var n=now();
   canvas.toBlob(async function(blob){
-    await processAndSave(blob,'LexHash_foto_'+n.getTime()+'.jpg','photo',n);
-    toast('Foto certificada!','ok');
+    try{await processAndSave(blob,'LexHash_foto_'+n.getTime()+'.jpg','photo',n);toast('Foto certificada!','ok');}catch(e){hideProg();toast('Error: '+e.message,'err');}
   },'image/jpeg',0.95);
 }
 
@@ -395,12 +394,12 @@ async function runImportHash(){
   var exp=document.getElementById('i-exp').value;
   showProg('Iniciando...',0);
   var geo=null;if(useGeo)geo=await getGeo();
-  for(var i=0;i<S.files.length;i++){
+  for(var i=0;i<S.files.length;i++){try{
     var f=S.files[i];
     setProg('Hasheando: '+f.name,Math.round(i/S.files.length*90));
     var ab=await f.arrayBuffer();
     await processAndSave(new Blob([ab],{type:f.type}),f.name,detectType(f.name),null,{algo:algo,geo:geo,expediente:exp});
-  }
+  }catch(e){hideProg();toast('Error: '+e.message,'err');return;}}
   setProg('Listo!',100);
   S.files=[];renderQueue();document.getElementById('hash-btn').disabled=true;document.getElementById('i-exp').value='';
   setTimeout(function(){hideProg();switchPage('evidence');toast('Archivos certificados','ok');},500);
@@ -526,7 +525,7 @@ function fIcon(n){var ext=(n.split('.').pop()||'').toLowerCase();var m={pdf:'pdf
 function tIcon(t){var m={photo:String.fromCodePoint(0x1F4F7),video:String.fromCodePoint(0x1F3AC),image:String.fromCodePoint(0x1F5BC),document:String.fromCodePoint(0x1F4C4),audio:String.fromCodePoint(0x1F3B5),archive:String.fromCodePoint(0x1F5DC)};return m[t]||String.fromCodePoint(0x1F4CE);}
 function detectType(n){var ext=(n.split('.').pop()||'').toLowerCase();if(['jpg','jpeg','png','gif','webp','heic','bmp'].includes(ext))return 'image';if(['mp4','webm','mov','avi','mkv'].includes(ext))return 'video';if(['mp3','wav','m4a','aac'].includes(ext))return 'audio';if(['pdf','doc','docx','txt','rtf'].includes(ext))return 'document';if(['zip','rar','7z'].includes(ext))return 'archive';return 'file';}
 function blobThumb(blob,px){return new Promise(function(res,rej){var img=new Image();var url=URL.createObjectURL(blob);img.onload=function(){var ratio=Math.min(1,px/Math.max(img.width,img.height));var c=document.createElement('canvas');c.width=Math.round(img.width*ratio);c.height=Math.round(img.height*ratio);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',.65));};img.onerror=function(){URL.revokeObjectURL(url);rej();};img.src=url;});}
-function getGeo(){return new Promise(function(res){if(!navigator.geolocation)return res(null);var done=false;var t=setTimeout(function(){if(!done){done=true;res(null);}},3000);navigator.geolocation.getCurrentPosition(function(p){if(!done){done=true;clearTimeout(t);res({lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy});}},function(){if(!done){done=true;clearTimeout(t);res(null);}},{timeout:2500,enableHighAccuracy:false,maximumAge:30000});});}
+function getGeo(){return new Promise(function(res){if(!navigator.geolocation)return res(null);var done=false;var t=setTimeout(function(){done=true;res(null);},1500);try{navigator.geolocation.getCurrentPosition(function(p){if(!done){done=true;clearTimeout(t);res({lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy});}},function(){if(!done){done=true;clearTimeout(t);res(null);}},{timeout:1200,enableHighAccuracy:false,maximumAge:60000});}catch(e){done=true;clearTimeout(t);res(null);}});}
 function cpTxt(txt){if(navigator.clipboard){navigator.clipboard.writeText(txt);return;}var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
 function saveEv(){var s=S.evidences.map(function(e){var c=Object.assign({},e);delete c.dataUrl;return c;});try{localStorage.setItem('lx_ev',JSON.stringify(s));}catch(e){var slim=s.map(function(e){var c=Object.assign({},e);delete c.thumbnail;return c;});try{localStorage.setItem('lx_ev',JSON.stringify(slim));}catch(e2){}}}
 function showProg(l,p){document.getElementById('prog-overlay').classList.add('on');document.getElementById('prog-lbl').textContent=l;document.getElementById('prog-fill').style.width=p+'%';}
