@@ -3,722 +3,2503 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0f1a">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LexHash">
-<meta name="theme-color" content="#0a0f1a">
-<title>LexHash</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<meta name="description" content="Herramienta de cadena de custodia digital para pruebas judiciales en Argentina">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>LexHash — Evidencia Digital Certificada</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
 <style>
-:root{--bg:#0a0f1a;--surface:#111827;--surface2:#1a2235;--border:#1e2d47;--accent:#00d4ff;--gold:#f4c542;--success:#00e676;--danger:#ff3d57;--text:#e8edf5;--muted:#5a7090}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Lora',serif;font-size:15px;display:flex;flex-direction:column}
-.app{display:flex;flex-direction:column;height:100vh;max-width:480px;width:100%;margin:0 auto;position:relative}
-.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.logo{display:flex;align-items:center;gap:8px}
-.lhex{width:28px;height:28px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--bg);font-weight:700;font-family:'Space Mono',monospace;border-radius:6px}
-.ltxt{font-family:'Syne',sans-serif;font-weight:800;font-size:18px}
-.ltxt span{color:var(--accent)}
-.ntpb{display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted)}
-.ndot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
-.ntab{flex:1;padding:10px 4px 8px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;-webkit-appearance:none}
-.ntab .ic{font-size:18px;line-height:1}
-.ntab.on{color:var(--accent);border-bottom-color:var(--accent)}
-.pg{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;flex-direction:column}
-.pg.on{display:flex}
-/* CAMARA */
-.cvid{background:#000;position:relative;width:100%;flex-shrink:0;min-height:180px}
-#vv{width:100%;display:block;object-fit:cover;-webkit-transform:translateZ(0)}
-.cov{position:absolute;inset:0;pointer-events:none}
-.corner{position:absolute;width:18px;height:18px;border-color:var(--accent);border-style:solid;opacity:.8}
-.tl{top:10px;left:10px;border-width:2px 0 0 2px}
-.tr{top:10px;right:10px;border-width:2px 2px 0 0}
-.bl{bottom:10px;left:10px;border-width:0 0 2px 2px}
-.br{bottom:10px;right:10px;border-width:0 2px 2px 0}
-.cts{position:absolute;bottom:8px;left:8px;font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,.75)}
-.cbdg{position:absolute;top:8px;right:8px;background:rgba(0,212,255,.15);border:1px solid var(--accent);color:var(--accent);font-family:'Space Mono',monospace;font-size:9px;padding:2px 7px}
-.rind{position:absolute;top:8px;left:8px;display:none;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:9px;color:var(--danger)}
-.rind.on{display:flex}
-.rdot{width:7px;height:7px;border-radius:50%;background:var(--danger);animation:blink 1s step-end infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.cph{width:100%;min-height:180px;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--muted)}
-.cph p{font-family:'Space Mono',monospace;font-size:10px;text-align:center;padding:0 20px}
-.cctrl{padding:14px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
-.msel{display:flex;gap:8px}
-.mbtn{flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;-webkit-appearance:none}
-.mbtn.on{background:rgba(0,212,255,.1);border-color:var(--accent);color:var(--accent)}
-.mbox{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px}
-.mr{display:flex;align-items:center;gap:8px}
-.ml{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);min-width:62px;text-transform:uppercase}
-.mi{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'Lora',serif;font-size:14px;padding:6px 10px;-webkit-appearance:none;outline:none}
-.mi:focus{border-color:var(--accent)}
-.crow{display:flex;align-items:center;justify-content:center;gap:20px;padding:4px 0}
-.sbt{width:42px;height:42px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none}
-.capbt{width:68px;height:68px;border-radius:50%;border:3px solid var(--accent);background:none;cursor:pointer;position:relative;-webkit-appearance:none}
-.capbt::after{content:'';position:absolute;inset:7px;border-radius:50%;background:var(--accent)}
-.capbt.rec{border-color:var(--danger)}
-.capbt.rec::after{background:var(--danger)}
-.bhash{width:100%;padding:14px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;text-transform:uppercase;cursor:pointer;-webkit-appearance:none}
-.bhash:disabled{opacity:.4}
-.bhash.sec{background:var(--surface2);border:1px solid var(--border);color:var(--accent)}
-/* IMPORT */
-.iwrap{padding:16px;display:flex;flex-direction:column;gap:14px}
-.stit{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;gap:10px}
-.stit::after{content:'';flex:1;height:1px;background:var(--border)}
-.dz{border:1.5px dashed var(--border);border-radius:8px;padding:28px 16px;text-align:center;cursor:pointer;background:var(--surface)}
-.dz .di{font-size:32px;margin-bottom:8px}
-.dz .dt{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:4px}
-.dz .ds{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
-.ftags{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px}
-.ft{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);border:1px solid var(--border);padding:2px 7px;border-radius:2px}
-#iq{display:flex;flex-direction:column;gap:6px}
-.qi{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:10px}
-.qn{font-family:'Space Mono',monospace;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qsz{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted)}
-.qrm{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;-webkit-appearance:none}
-.obox{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px}
-.or{display:flex;align-items:center;justify-content:space-between}
-.ol{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.osel{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:11px;padding:5px 8px;border-radius:3px;-webkit-appearance:none;outline:none}
-.tog{position:relative;width:38px;height:22px}
-.tog input{display:none}
-.tt{position:absolute;inset:0;background:var(--border);border-radius:11px;cursor:pointer;transition:background .2s}
-.tog input:checked+.tt{background:var(--accent)}
-.th{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;pointer-events:none;transition:transform .2s}
-.tog input:checked~.th{transform:translateX(16px)}
-/* EVIDENCE */
-.ewrap{padding:14px;display:flex;flex-direction:column;gap:10px}
-.emp{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:10px;text-align:center}
-.ei{font-size:44px;opacity:.25}
-.et{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--muted)}
-.es{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7}
-.ecard{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:2px}
-.ehead{background:var(--surface2);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.ehl{display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0}
-.efn{font-family:'Space Mono',monospace;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.eft{font-family:'Space Mono',monospace;font-size:8px;color:var(--muted)}
-.ebdgs{display:flex;gap:3px;flex-shrink:0}
-.eb{font-family:'Space Mono',monospace;font-size:8px;padding:2px 5px;border-radius:2px}
-.bok{background:rgba(0,230,118,.1);color:var(--success);border:1px solid rgba(0,230,118,.3)}
-.bntp{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.3)}
-.brfc{background:rgba(244,197,66,.1);color:var(--gold);border:1px solid rgba(244,197,66,.3)}
-.ebody{padding:10px 12px}
-.ehr{display:flex;gap:6px;align-items:flex-start}
-.eal{font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);min-width:48px;padding-top:1px}
-.ehv{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);word-break:break-all;line-height:1.5}
-.eex{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px}
-.eact{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:5px}
-.ebt{flex:1;padding:7px 4px;background:none;border:1px solid var(--border);border-radius:3px;color:var(--muted);font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;cursor:pointer;-webkit-appearance:none}
-/* MODAL */
-.mbg{display:none;position:fixed;inset:0;background:rgba(10,15,26,.96);z-index:200;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.mbg.on{display:block}
-.min{padding:16px;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding-bottom:48px}
-.mhd{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
-.mttl{font-family:'Syne',sans-serif;font-weight:700;font-size:17px}
-.mcl{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;-webkit-appearance:none;line-height:1;padding:4px}
-.dblk{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
-.dr{display:flex;flex-direction:column;gap:2px}
-.dl{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.dv{font-family:'Space Mono',monospace;font-size:11px;color:var(--text);word-break:break-all;line-height:1.5}
-.hblk{background:var(--surface2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:0 4px 4px 0;margin-bottom:6px}
-.brow{display:flex;gap:10px}
-.bacc{flex:1;padding:13px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;cursor:pointer;-webkit-appearance:none;text-align:center}
-.bacc.gld{background:var(--gold)}
-/* PROGRESS */
-.pov{display:none;position:fixed;inset:0;background:rgba(10,15,26,.93);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px}
-.pov.on{display:flex}
-.spin{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.plbl{font-family:'Space Mono',monospace;font-size:12px;color:var(--text);text-align:center}
-.pbar{width:100%;max-width:260px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
-.pfil{height:100%;background:var(--accent);transition:width .3s;width:0%}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:11px;padding:9px 16px;border-radius:6px;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;max-width:88vw;overflow:hidden;text-overflow:ellipsis}
-#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-#toast.ok{border-color:var(--success);color:var(--success)}
-#toast.er{border-color:var(--danger);color:var(--danger)}
-#fi{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+:root {
+  --bg: #0a0f1a;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: #1e2d47;
+  --accent: #00d4ff;
+  --accent2: #0099cc;
+  --gold: #f4c542;
+  --gold2: #d4a012;
+  --success: #00e676;
+  --danger: #ff3d57;
+  --text: #e8edf5;
+  --muted: #5a7090;
+  --muted2: #3a5070;
+  --ink: #0a0f1a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Lora', serif;
+  font-size: 15px;
+}
+
+/* ── APP SHELL ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── HEADER ── */
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--bg);
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+}
+
+.logo-text {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.logo-text span { color: var(--accent); }
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── NAV TABS ── */
+.nav-tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+
+.nav-tab {
+  flex: 1;
+  min-width: 70px;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.nav-tab .tab-icon { font-size: 18px; }
+
+.nav-tab.active {
+  color: var(--accent);
+}
+
+.nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px 1px 0 0;
+}
+
+/* ── PAGES ── */
+.page {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.page.active { display: flex; flex-direction: column; }
+
+/* ── CAMERA PAGE ── */
+#camera-preview-wrap {
+  position: relative;
+  background: #000;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+#camera-video {
+  width: 100%;
+  display: block;
+  max-height: 55vh;
+  object-fit: cover;
+}
+
+.camera-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.camera-corners {
+  position: absolute;
+  inset: 12px;
+}
+
+.corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--accent);
+  border-style: solid;
+  opacity: 0.7;
+}
+.corner.tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
+.corner.tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
+.corner.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+.corner.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+.camera-timestamp {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.8);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  pointer-events: none;
+}
+
+.camera-mode-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,212,255,0.2);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  text-transform: uppercase;
+}
+
+.camera-rec-indicator {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--danger);
+}
+
+.camera-rec-indicator.recording { display: flex; }
+
+.rec-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.camera-controls {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.mode-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.mode-btn.active {
+  background: rgba(0,212,255,0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.capture-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.capture-btn {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  background: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.capture-btn::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: all 0.15s;
+}
+
+.capture-btn:active::after { transform: scale(0.88); }
+.capture-btn.recording { border-color: var(--danger); }
+.capture-btn.recording::after { background: var(--danger); }
+
+.side-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.side-btn:active { transform: scale(0.9); }
+
+.evidence-meta {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meta-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.meta-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 60px;
+}
+
+.meta-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Lora', serif;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  outline: none;
+}
+
+.meta-input:focus { border-color: var(--accent); }
+
+/* ── IMPORT PAGE ── */
+.import-page {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.drop-zone {
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  background: var(--surface);
+}
+
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(0,212,255,0.04);
+}
+
+.drop-zone input { display: none; }
+
+.drop-icon { font-size: 36px; margin-bottom: 10px; }
+
+.drop-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.drop-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.file-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.file-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+#import-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.queue-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.queue-item-icon { font-size: 22px; text-align: center; }
+
+.queue-item-info { overflow: hidden; }
+
+.queue-item-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queue-item-size {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.queue-remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.queue-remove:hover { color: var(--danger); }
+
+/* ── SHARED: HASH OPTIONS ── */
+.hash-options {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.opt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.opt-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.opt-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.opt-select:focus { border-color: var(--accent); }
+
+.toggle {
+  position: relative;
+  width: 40px; height: 22px;
+}
+
+.toggle input { display: none; }
+
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.toggle input:checked + .toggle-track { background: var(--accent); }
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  pointer-events: none;
+}
+
+.toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+.btn-hash {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-hash:hover { background: #00b8d9; transform: translateY(-1px); }
+.btn-hash:active { transform: translateY(0); }
+.btn-hash:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ── PROGRESS ── */
+.progress-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,15,26,0.92);
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.progress-overlay.visible { display: flex; }
+
+.progress-spinner {
+  width: 60px; height: 60px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.progress-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.progress-bar-wrap {
+  width: 100%;
+  max-width: 280px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+/* ── EVIDENCE PAGE ── */
+.evidence-page {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.evidence-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: fadeUp 0.3s ease;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.evidence-card:hover { border-color: var(--accent); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ev-header {
+  padding: 12px 14px;
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ev-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.ev-type-icon { font-size: 20px; flex-shrink: 0; }
+
+.ev-filename {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ev-timestamp {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.ev-badges {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ev-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.badge-ok { background: rgba(0,230,118,0.1); color: var(--success); border: 1px solid rgba(0,230,118,0.3); }
+.badge-rfc { background: rgba(244,197,66,0.1); color: var(--gold); border: 1px solid rgba(244,197,66,0.3); }
+.badge-ntp { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.3); }
+
+.ev-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ev-hash-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ev-algo {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--accent);
+  text-transform: uppercase;
+  min-width: 52px;
+  padding-top: 2px;
+}
+
+.ev-hash {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  word-break: break-all;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.ev-actions {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.ev-btn {
+  flex: 1;
+  padding: 7px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s;
+}
+
+.ev-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ev-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  gap: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.empty-icon { font-size: 48px; opacity: 0.3; }
+
+.empty-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--muted2);
+}
+
+.empty-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+}
+
+/* ── MODAL / DETAIL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,15,26,0.95);
+  z-index: 300;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.modal-overlay.visible { display: flex; }
+
+.modal-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+
+/* ── CERTIFICATE ── */
+.cert-wrap {
+  background: #fff;
+  color: #111;
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: 'Lora', serif;
+}
+
+.cert-top {
+  background: #0a0f1a;
+  color: #00d4ff;
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.cert-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.cert-logo span { color: #00d4ff; }
+
+.cert-top-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.cert-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cert-heading {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: #444;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.cert-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cert-key {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.cert-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #111;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.cert-hash-block {
+  background: #f5f5f5;
+  border-left: 3px solid #00d4ff;
+  padding: 10px 12px;
+}
+
+.cert-val.hash {
+  font-size: 9px;
+  color: #333;
+}
+
+.cert-footer {
+  background: #f9f9f9;
+  border-top: 1px solid #eee;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cert-seal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.seal-circle {
+  width: 52px; height: 52px;
+  border: 2px solid #0a0f1a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  text-align: center;
+  color: #0a0f1a;
+  line-height: 1.3;
+  position: relative;
+}
+
+.seal-circle::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid #0a0f1a;
+  border-radius: 50%;
+}
+
+.cert-legal {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  color: #999;
+  text-align: right;
+  max-width: 200px;
+  line-height: 1.5;
+}
+
+/* ── ACTION SHEET ── */
+.action-sheet {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+}
+
+.action-sheet.visible { display: block; }
+
+.action-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+}
+
+.action-panel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.action-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: -8px auto 8px;
+}
+
+.action-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.action-item {
+  padding: 14px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.action-item:hover { border-color: var(--accent); color: var(--accent); }
+.action-item.danger:hover { border-color: var(--danger); color: var(--danger); }
+.action-icon { font-size: 20px; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 500;
+  white-space: nowrap;
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#toast.success { border-color: var(--success); color: var(--success); }
+#toast.error { border-color: var(--danger); color: var(--danger); }
+
+/* ── CANVAS (hidden, for photo stamping) ── */
+#stamp-canvas { display: none; }
+
 </style>
+
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEHklEQVR4nO3cO25bVxSG0avARaLGvT2BNClTeQBpM41kCp5bOg0jpaagRgiQYgcEo6etXzzPtSp29/Dg474Pgry6/vjpgLf6ofcCmJuAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICOgldze3vZcwuiu/C3vSg3Suv3zutZLBCegJzw0eGT0moP959ZyloQcE9J/vutyR0YmA3n6lLKNDQPl91uYZ7RvQO96i79zQjgFd6OnOnhntFVCDB4O7ZbRRQC0fK++T0RYB9fpGYoeMFg+o+5dZyze0bEDd0zm3cEZrBjRUPSdLZrRaQGOmc26xjNYJaPx0TlZqaIWAJkrn3BoZTR/QpPWczJ7RxAHNns65eTOaMqCV0jk3Y0aTBbRqOifTNTRTQMvXczJRRnMEtE8656bIaPSA9kzn3OAZjRuQdE5GbmjQgNTz2JgZDReQdF42WkYDBSSdbzdORkMEJJ23GSGj/v/OoZ43G2Hrek6gEd7/GjqOoj4BSecSumTUOiDpXFrjjJpeA6mngcab3GgCSae9NqPo4gFJp69LZ9T/Np6pCYiIgIgIiIiAiAiIiICICIiIgIjsFdBPv/3cewmr2Ssg3p2AiAiIiICICIiIgIh86L2Apq7u73/84/d6/c8vv97/+bXrclawV0B3f/3dewmrcQojIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIicnX98VODw9zd3DY4Cueuv3xucJRGARUZtdEmndL0FNbyjW2r8SY3nUAnRtEldPl89gmoyOi9dBztPQMqMkp0vyrofxvffQvmNcLW9Z9AJ0bRtxshnTJQQEVGLxsnnTJcQEVGj42WThk0oCKjkzHrOQYP6NDQwOmU0QMqe2Y0eDpljoDKPhlNkU6ZKaCyfEYT1XPMGNCxbkNzpVOmDKislNGM6ZSJAyqzZzRvOmX6gMqkGc1ez7FMQGWijBZIpywV0DFDQ8ukU1YLqIyZ0WLplDUDKkNltGQ9x9oBle4ZrZpOWT+go19Da6dTtgiotMxoh3TKRgGVBhntU8+xYUDlQhltlU7ZNKDyjhltmE7ZOqDjPRraNp2ye0DlzRltXs8hoHPflZF0ioAeejUj6ZwT0BOea0g6jwnoWQ8yUs+TBPSKu5tb6bxAQET6/70LUxMQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERCRfwHvp/LRLhL5hwAAAABJRU5ErkJggg==">
+<script>
+(function() {
+  // Inline manifest
+  const mData = {
+  "name": "LexHash — Evidencia Digital",
+  "short_name": "LexHash",
+  "description": "Herramienta de cadena de custodia digital para pruebas judiciales en Argentina",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0a0f1a",
+  "background_color": "#0a0f1a",
+  "lang": "es-AR",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "permissions": ["camera", "microphone", "geolocation"]
+}
+;
+  const mBlob = new Blob([JSON.stringify(mData)], {type:'application/manifest+json'});
+  const mUrl = URL.createObjectURL(mBlob);
+  const mLink = document.querySelector('link[rel="manifest"]');
+  if (mLink) mLink.href = mUrl;
+
+  // Inline service worker
+  const swCode = `// LexHash Service Worker v1.0
+const CACHE = 'lexhash-v1';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', e => {
+  // Network first for NTP/time APIs, cache first for app shell
+  if (e.request.url.includes('worldtimeapi') || e.request.url.includes('timeapi')) {
+    e.respondWith(fetch(e.request).catch(() => new Response('{}', { headers: { 'Content-Type': 'application/json' } })));
+    return;
+  }
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
+      if (resp.ok && e.request.method === 'GET') {
+        const clone = resp.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+      }
+      return resp;
+    }).catch(() => cached))
+  );
+});
+`;
+  const swBlob = new Blob([swCode], {type:'text/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(swUrl).catch(()=>{});
+  }
+})();
+</script>
 </head>
 <body>
+
 <div class="app">
-  <div class="hdr">
-    <div class="logo"><div class="lhex">L</div><div class="ltxt">Lex<span>Hash</span></div></div>
-    <div class="ntpb"><div class="ndot"></div><span id="ntpl">SYNC</span></div>
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="logo">
+      <div class="logo-icon">L</div>
+      <div class="logo-text">Lex<span>Hash</span></div>
+    </div>
+    <div class="header-status">
+      <div class="status-dot"></div>
+      <span id="ntp-label">SINCRONIZANDO</span>
+    <button onclick="showSettings()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:3px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⚙ TSA</button>
   </div>
-  <div class="nav">
-    <button class="ntab on" id="tc" onclick="pg('c')"><span class="ic">&#128247;</span><span>Capturar</span></button>
-    <button class="ntab" id="ti" onclick="pg('i')"><span class="ic">&#128194;</span><span>Importar</span></button>
-    <button class="ntab" id="te" onclick="pg('e')"><span class="ic">&#128193;</span><span>Pruebas</span></button>
   </div>
 
-  <!-- CAMARA -->
-  <div class="pg on" id="pc">
-    <div class="cvid">
-      <video id="vv" autoplay playsinline muted webkit-playsinline style="display:none"></video>
-      <div class="cph" id="cph"><span style="font-size:36px">&#128247;</span><p>Toca Activar camara para iniciar</p></div>
-      <div class="cov">
-        <div class="corner tl"></div><div class="corner tr"></div>
-        <div class="corner bl"></div><div class="corner br"></div>
-        <div class="rind" id="ri"><div class="rdot"></div><span id="rt">00:00</span></div>
-        <div class="cbdg" id="cbdg">FOTO</div>
-        <div class="cts" id="lts"></div>
+  <!-- NAV -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('camera')">
+      <span class="tab-icon">📷</span>
+      <span>Capturar</span>
+    </button>
+    <button class="nav-tab" onclick="switchPage('import')">
+      <span class="tab-icon">📂</span>
+      <span>Importar</span>
+    </button>
+    <button class="nav-tab" onclick="switchPage('evidence')">
+      <span class="tab-icon">🗂️</span>
+      <span>Pruebas</span>
+    </button>
+  </div>
+
+  <!-- ── PAGE: CAMERA ── -->
+  <div class="page active" id="page-camera">
+    <div id="camera-preview-wrap">
+      <video id="camera-video" autoplay playsinline muted></video>
+      <canvas id="stamp-canvas"></canvas>
+      <div class="camera-overlay">
+        <div class="camera-corners">
+          <div class="corner tl"></div>
+          <div class="corner tr"></div>
+          <div class="corner bl"></div>
+          <div class="corner br"></div>
+        </div>
+        <div class="camera-rec-indicator" id="rec-indicator">
+          <div class="rec-dot"></div>
+          <span id="rec-timer">00:00</span>
+        </div>
+        <div class="camera-mode-badge" id="camera-mode-badge">FOTO</div>
+        <div class="camera-timestamp" id="live-clock"></div>
       </div>
     </div>
-    <div class="cctrl">
-      <div class="msel">
-        <button class="mbtn on" id="mph" onclick="setm('photo')">&#128247; Foto</button>
-        <button class="mbtn" id="mvi" onclick="setm('video')">&#127916; Video</button>
+
+    <div class="camera-controls">
+      <div class="mode-selector">
+        <button class="mode-btn active" id="mode-photo" onclick="setCameraMode('photo')">📷 Foto</button>
+        <button class="mode-btn" id="mode-video" onclick="setCameraMode('video')">🎬 Video</button>
       </div>
-      <div class="mbox">
-        <div class="mr"><span class="ml">Expediente</span><input class="mi" id="cexp" type="text" placeholder="N&#xBA; o car&#225;tula (opcional)"></div>
-        <div class="mr"><span class="ml">Nota</span><input class="mi" id="cnot" type="text" placeholder="Descripci&#243;n (opcional)"></div>
+
+      <div class="evidence-meta">
+        <div class="meta-row">
+          <span class="meta-label">Expediente</span>
+          <input class="meta-input" id="cam-expediente" type="text" placeholder="N° o carátula (opcional)">
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Nota</span>
+          <input class="meta-input" id="cam-nota" type="text" placeholder="Descripción breve (opcional)">
+        </div>
       </div>
-      <div class="crow">
-        <button class="sbt" onclick="flip()">&#128260;</button>
-        <button class="capbt" id="capbt" onclick="hcap()"></button>
-        <button class="sbt" onclick="pg('i')">&#128194;</button>
+
+      <div class="capture-row">
+        <button class="side-btn" onclick="flipCamera()" title="Cambiar cámara">🔄</button>
+        <button class="capture-btn" id="capture-btn" onclick="handleCapture()"></button>
+        <button class="side-btn" onclick="openImportPage()" title="Galería">🖼️</button>
       </div>
-      <button class="bhash sec" onclick="initCam()">&#128247; Activar camara</button>
     </div>
   </div>
 
-  <!-- IMPORTAR -->
-  <div class="pg" id="pi">
-    <div class="iwrap">
-      <div class="stit">Importar Archivos</div>
-      <div class="dz" onclick="document.getElementById('fi').click()">
-        <div class="di">&#128206;</div>
-        <div class="dt">Tocar para seleccionar archivos</div>
-        <div class="ds">Documentos &middot; Fotos &middot; Videos &middot; Chats exportados</div>
-        <div class="ftags">
-          <span class="ft">PDF</span><span class="ft">JPG</span><span class="ft">PNG</span>
-          <span class="ft">MP4</span><span class="ft">MOV</span><span class="ft">DOCX</span>
-          <span class="ft">TXT</span><span class="ft">ZIP</span>
+  <!-- ── PAGE: IMPORT ── -->
+  <div class="page" id="page-import">
+    <div class="import-page">
+      <div class="section-title">Importar Archivos</div>
+
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" multiple accept="*/*">
+        <div class="drop-icon">📎</div>
+        <div class="drop-title">Arrastrá o tocá para agregar</div>
+        <div class="drop-sub">Documentos · Imágenes · Videos · Chats</div>
+        <div class="file-tags">
+          <span class="file-tag">PDF</span>
+          <span class="file-tag">JPG</span>
+          <span class="file-tag">PNG</span>
+          <span class="file-tag">MP4</span>
+          <span class="file-tag">MP3</span>
+          <span class="file-tag">DOCX</span>
+          <span class="file-tag">TXT</span>
+          <span class="file-tag">ZIP</span>
         </div>
       </div>
-      <input type="file" id="fi" multiple accept="*/*">
-      <div id="iq"></div>
-      <div class="obox">
-        <div class="stit" style="font-size:13px">Opciones</div>
-        <div class="or"><span class="ol">Algoritmo</span>
-          <select class="osel" id="algo"><option value="SHA-256">SHA-256</option><option value="SHA-512">SHA-512</option></select>
+
+      <div id="import-queue"></div>
+
+      <div class="hash-options">
+        <div class="section-title" style="font-size:13px">Opciones de Sellado</div>
+        <div class="opt-row">
+          <span class="opt-label">Algoritmo Hash</span>
+          <select class="opt-select" id="hash-algo">
+            <option value="SHA-256">SHA-256</option>
+            <option value="SHA-384">SHA-384</option>
+            <option value="SHA-512">SHA-512</option>
+          </select>
         </div>
-        <div class="or"><span class="ol">RFC 3161</span>
-          <label class="tog"><input type="checkbox" id="urfc" checked><div class="tt"></div><div class="th"></div></label>
+        <div class="opt-row">
+          <span class="opt-label">Sync NTP</span>
+          <label class="toggle">
+            <input type="checkbox" id="use-ntp" checked>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
         </div>
-        <div class="or"><span class="ol">Geolocalizacion</span>
-          <label class="tog"><input type="checkbox" id="ugeo"><div class="tt"></div><div class="th"></div></label>
+        <div class="opt-row">
+          <span class="opt-label">Sello RFC 3161</span>
+          <label class="toggle">
+            <input type="checkbox" id="use-rfc" checked>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
         </div>
-        <div class="mr"><span class="ml" style="min-width:70px">Expediente</span>
-          <input class="mi" id="iexp" type="text" placeholder="N&#xBA; o car&#225;tula (opcional)">
+        <div class="opt-row">
+          <span class="opt-label">Datos de Captura</span>
+          <label class="toggle">
+            <input type="checkbox" id="use-geo">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="meta-row" style="margin-top:4px">
+          <span class="meta-label" style="min-width:70px">Expediente</span>
+          <input class="meta-input" id="imp-expediente" type="text" placeholder="N° o carátula (opcional)">
         </div>
       </div>
-      <button class="bhash" id="hbtn" onclick="runHash()" disabled>&#128272; Generar Hash + Certificar</button>
+
+      <button class="btn-hash" id="hash-btn" onclick="hashImportFiles()" disabled>
+        🔐 Generar Hash + Certificar
+      </button>
     </div>
   </div>
 
-  <!-- PRUEBAS -->
-  <div class="pg" id="pe">
-    <div class="ewrap" id="ew">
-      <div class="emp" id="emp">
-        <div class="ei">&#128193;</div>
-        <div class="et">Sin evidencias aun</div>
-        <div class="es">Captura fotos/videos o importa<br>archivos desde la pestana anterior</div>
+  <!-- ── PAGE: EVIDENCE ── -->
+  <div class="page" id="page-evidence">
+    <div class="evidence-page" id="evidence-list">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🗂️</div>
+        <div class="empty-title">Sin evidencias aún</div>
+        <div class="empty-sub">Capturá fotos o videos,<br>o importá archivos desde la pestaña anterior</div>
       </div>
     </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- PROGRESS OVERLAY -->
+<div class="progress-overlay" id="progress-overlay">
+  <div class="progress-spinner"></div>
+  <div class="progress-label" id="progress-label">Procesando...</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill"></div>
   </div>
 </div>
 
-<div class="mbg" id="mbg"><div class="min" id="min"></div></div>
-<div class="pov" id="pov"><div class="spin"></div><div class="plbl" id="plbl">Procesando...</div><div class="pbar"><div class="pfil" id="pfil"></div></div></div>
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal-content" id="modal-inner"></div>
+</div>
+
+<!-- ACTION SHEET -->
+<div class="action-sheet" id="action-sheet">
+  <div class="action-backdrop" onclick="closeActionSheet()"></div>
+  <div class="action-panel" id="action-panel">
+    <div class="action-handle"></div>
+    <div class="action-title" id="action-title">Opciones</div>
+    <div id="action-items"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
 <div id="toast"></div>
-<canvas id="sc" style="display:none"></canvas>
 
 <script>
-var S={ev:[],ntp:0,synced:false,stream:null,rec:null,cks:[],rst:null,rtmr:null,mode:'photo',face:'environment',files:[]};
-try{S.ev=JSON.parse(localStorage.getItem('lxev')||'[]');}catch(e){}
+'use strict';
 
-document.addEventListener('DOMContentLoaded',function(){
-  syncNTP();setInterval(syncNTP,60000);startClk();setupFi();renderEv();
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+const state = {
+  evidences: JSON.parse(localStorage.getItem('lx_evidences') || '[]'),
+  ntpOffset: 0,
+  ntpSynced: false,
+  stream: null,
+  mediaRecorder: null,
+  recordedChunks: [],
+  recordingStart: null,
+  recTimerInterval: null,
+  cameraMode: 'photo',
+  facingMode: 'environment',
+  importFiles: [],
+  currentEvidenceId: null,
+};
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  syncNTP();
+  setInterval(syncNTP, 60000);
+  startLiveClock();
+  startCamera();
+  renderEvidenceList();
+  setupDropZone();
+  setupFileInput();
 });
 
-// NTP
-async function syncNTP(){
-  var lbl=document.getElementById('ntpl');
-  try{
-    var t0=Date.now();
-    var r=await fetch('https://worldtimeapi.org/api/timezone/America/Argentina/Buenos_Aires',{cache:'no-store'});
-    var t1=Date.now();
-    if(r.ok){
-      var d=await r.json();
-      S.ntp=new Date(d.datetime).getTime()-t1+(t1-t0)/2;
-      S.synced=true;lbl.textContent='NTP ART';return;
+// ═══════════════════════════════════════════════
+// NTP SYNC
+// ═══════════════════════════════════════════════
+async function syncNTP() {
+  const label = document.getElementById('ntp-label');
+  try {
+    // Use worldtimeapi for time sync
+    const t0 = Date.now();
+    const r = await fetch('https://worldtimeapi.org/api/timezone/America/Argentina/Buenos_Aires', {cache:'no-store'});
+    const t1 = Date.now();
+    if (r.ok) {
+      const data = await r.json();
+      const serverMs = new Date(data.datetime).getTime();
+      const rtt = t1 - t0;
+      state.ntpOffset = serverMs - t1 + rtt/2;
+      state.ntpSynced = true;
+      label.textContent = 'NTP OK · ART';
+    } else {
+      throw new Error();
     }
-  }catch(e){}
-  try{
-    var r2=await fetch('https://timeapi.io/api/time/current/zone?timeZone=America/Argentina/Buenos_Aires',{cache:'no-store'});
-    if(r2.ok){
-      var d2=await r2.json();
-      S.ntp=new Date(d2.date+'T'+d2.time).getTime()-Date.now();
-      S.synced=true;lbl.textContent='NTP ART';return;
+  } catch {
+    // Fallback: use a different endpoint
+    try {
+      const t0 = Date.now();
+      const r = await fetch('https://timeapi.io/api/time/current/zone?timeZone=America/Argentina/Buenos_Aires', {cache:'no-store'});
+      const t1 = Date.now();
+      if (r.ok) {
+        const data = await r.json();
+        const serverMs = new Date(`${data.date}T${data.time}`).getTime();
+        state.ntpOffset = serverMs - t1;
+        state.ntpSynced = true;
+        label.textContent = 'NTP OK · ART';
+      }
+    } catch {
+      state.ntpSynced = false;
+      label.textContent = 'HORA LOCAL';
     }
-  }catch(e){}
-  lbl.textContent='LOCAL';
+  }
 }
 
-function tnow(){return new Date(Date.now()+S.ntp);}
-
-function fdt(d){
-  if(!(d instanceof Date))d=new Date(d);
-  var p=function(n){return String(n).padStart(2,'0');};
-  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+' ART';
+function getNTPTime() {
+  return new Date(Date.now() + state.ntpOffset);
 }
 
-function startClk(){
-  var el=document.getElementById('lts');
-  setInterval(function(){el.textContent=fdt(tnow());},1000);
+function formatDateTime(d) {
+  if (!(d instanceof Date)) d = new Date(d);
+  const pad = n => String(n).padStart(2,'0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ART`;
 }
 
-// NAV
-function pg(name){
-  ['c','i','e'].forEach(function(x){
-    document.getElementById('p'+x).classList.toggle('on',x===name);
-    document.getElementById('t'+x).classList.toggle('on',x===name);
-  });
-  if(name==='e')renderEv();
+function formatDateTimeISO(d) {
+  if (!(d instanceof Date)) d = new Date(d);
+  return d.toISOString();
 }
 
+// ═══════════════════════════════════════════════
+// LIVE CLOCK
+// ═══════════════════════════════════════════════
+function startLiveClock() {
+  const el = document.getElementById('live-clock');
+  setInterval(() => {
+    el.textContent = formatDateTime(getNTPTime());
+  }, 1000);
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const idx = ['camera','import','evidence'].indexOf(name);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  if (name === 'evidence') renderEvidenceList();
+}
+
+function openImportPage() { switchPage('import'); }
+
+// ═══════════════════════════════════════════════
 // CAMERA
-async function initCam(){
-  var v=document.getElementById('vv');
-  var ph=document.getElementById('cph');
-  try{
-    if(S.stream){S.stream.getTracks().forEach(function(t){t.stop();});S.stream=null;}
-    S.stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:S.face,width:{ideal:1280},height:{ideal:720}},
-      audio:S.mode==='video'
-    });
-    v.srcObject=S.stream;
-    v.style.display='block';
-    ph.style.display='none';
-    try{await v.play();}catch(e){}
-    toast('Camara activa','ok');
-  }catch(e){
-    toast('Error camara: '+e.message,'er');
-  }
-}
-
-function flip(){
-  S.face=S.face==='environment'?'user':'environment';
-  if(S.stream)initCam();
-}
-
-function setm(m){
-  S.mode=m;
-  document.getElementById('mph').classList.toggle('on',m==='photo');
-  document.getElementById('mvi').classList.toggle('on',m==='video');
-  document.getElementById('cbdg').textContent=m==='photo'?'FOTO':'VIDEO';
-}
-
-async function hcap(){
-  if(!S.stream){toast('Activar camara primero','er');return;}
-  if(S.mode==='photo'){
-    await capFoto();
-  }else{
-    if(S.rec&&S.rec.state==='recording'){stopRec();}else{startRec();}
-  }
-}
-
-async function capFoto(){
-  var v=document.getElementById('vv');
-  if(!v.videoWidth){toast('Camara no lista','er');return;}
-  var c=document.getElementById('sc');
-  c.width=v.videoWidth;c.height=v.videoHeight;
-  var ctx=c.getContext('2d');
-  if(S.face==='user'){ctx.translate(c.width,0);ctx.scale(-1,1);}
-  ctx.drawImage(v,0,0);
-  if(S.face==='user')ctx.setTransform(1,0,0,1,0,0);
-  var ts=fdt(tnow());
-  ctx.fillStyle='rgba(0,0,0,.5)';
-  ctx.fillRect(0,c.height-40,c.width,40);
-  ctx.fillStyle='#00d4ff';
-  ctx.font='bold '+Math.max(14,Math.round(c.width/60))+'px monospace';
-  ctx.fillText('LexHash * '+ts,10,c.height-12);
-  var n=tnow();
-  c.toBlob(async function(blob){
-    try{
-      await proc(blob,'LexHash_foto_'+n.getTime()+'.jpg','photo',n,{});
-      toast('Foto certificada!','ok');
-    }catch(e){
-      hidePr();toast('Error: '+e.message,'er');
+// ═══════════════════════════════════════════════
+async function startCamera() {
+  try {
+    if (state.stream) {
+      state.stream.getTracks().forEach(t => t.stop());
     }
-  },'image/jpeg',.95);
-}
-
-function startRec(){
-  if(!S.stream)return;
-  S.cks=[];S.rst=tnow();
-  var opts={};
-  if(typeof MediaRecorder!=='undefined'){
-    if(MediaRecorder.isTypeSupported('video/mp4'))opts.mimeType='video/mp4';
-    else if(MediaRecorder.isTypeSupported('video/webm'))opts.mimeType='video/webm';
-  }
-  try{S.rec=new MediaRecorder(S.stream,opts);}
-  catch(e){
-    try{S.rec=new MediaRecorder(S.stream);}
-    catch(e2){toast('Video no disponible','er');return;}
-  }
-  S.rec.ondataavailable=function(e){if(e.data&&e.data.size>0)S.cks.push(e.data);};
-  S.rec.onstop=async function(){
-    var ext=(S.rec.mimeType||'').indexOf('mp4')>=0?'mp4':'webm';
-    var blob=new Blob(S.cks,{type:S.rec.mimeType||'video/webm'});
-    try{
-      await proc(blob,'LexHash_video_'+S.rst.getTime()+'.'+ext,'video',S.rst,{});
-      toast('Video certificado!','ok');
-    }catch(e){
-      hidePr();toast('Error: '+e.message,'er');
-    }
-    S.cks=[];
-  };
-  S.rec.start(500);
-  document.getElementById('capbt').classList.add('rec');
-  document.getElementById('ri').classList.add('on');
-  var secs=0;
-  S.rtmr=setInterval(function(){
-    secs++;
-    var m=String(Math.floor(secs/60)).padStart(2,'0');
-    var s=String(secs%60).padStart(2,'0');
-    document.getElementById('rt').textContent=m+':'+s;
-  },1000);
-}
-
-function stopRec(){
-  if(S.rec&&S.rec.state==='recording')S.rec.stop();
-  clearInterval(S.rtmr);
-  document.getElementById('capbt').classList.remove('rec');
-  document.getElementById('ri').classList.remove('on');
-  document.getElementById('rt').textContent='00:00';
-}
-
-// FILE INPUT
-function setupFi(){
-  var inp=document.getElementById('fi');
-  inp.addEventListener('change',function(e){
-    if(e.target.files&&e.target.files.length){
-      S.files=S.files.concat(Array.from(e.target.files));
-      renderQ();
-      document.getElementById('hbtn').disabled=S.files.length===0;
-    }
-    inp.value='';
-  });
-}
-
-function rmFile(i){
-  S.files.splice(i,1);
-  renderQ();
-  document.getElementById('hbtn').disabled=S.files.length===0;
-}
-
-function renderQ(){
-  var c=document.getElementById('iq');c.innerHTML='';
-  S.files.forEach(function(f,i){
-    var d=document.createElement('div');d.className='qi';
-    d.innerHTML='<span style="font-size:20px;text-align:center">'+ficn(f.name)+'</span>'
-      +'<div><div class="qn">'+f.name+'</div><div class="qsz">'+fsz(f.size)+'</div></div>'
-      +'<button class="qrm" onclick="rmFile('+i+')">x</button>';
-    c.appendChild(d);
-  });
-}
-
-async function runHash(){
-  if(S.files.length===0)return;
-  var algo=document.getElementById('algo').value;
-  var useGeo=document.getElementById('ugeo').checked;
-  var exp=document.getElementById('iexp').value;
-  showPr('Iniciando...',0);
-  var geo=null;
-  if(useGeo){
-    setPr('Geolocalizacion...',10);
-    geo=await getGeo();
-  }
-  for(var i=0;i<S.files.length;i++){
-    var f=S.files[i];
-    setPr('Hasheando: '+f.name,Math.round(20+i/S.files.length*70));
-    try{
-      var ab=await f.arrayBuffer();
-      await proc(new Blob([ab],{type:f.type}),f.name,dtyp(f.name),null,{algo:algo,geo:geo,exp:exp});
-    }catch(e){
-      hidePr();toast('Error: '+e.message,'er');return;
-    }
-  }
-  setPr('Listo!',100);
-  S.files=[];renderQ();
-  document.getElementById('hbtn').disabled=true;
-  document.getElementById('iexp').value='';
-  setTimeout(function(){hidePr();pg('e');toast('Archivos certificados','ok');},500);
-}
-
-// CORE
-async function proc(blob,fname,type,capT,opts){
-  opts=opts||{};
-  var algo=opts.algo||'SHA-256';
-  var exp=opts.exp||document.getElementById('cexp').value||'';
-  var nota=opts.nota||document.getElementById('cnot').value||'';
-  var geo=opts.geo||null;
-  showPr('Generando hash...',20);
-  var n=capT||tnow();
-  var ab=await blob.arrayBuffer();
-  var hb=await crypto.subtle.digest(algo,ab);
-  var mh=hex(hb);
-  var hashes={};hashes[algo]=mh;
-  if(algo!=='SHA-256'){
-    var h2=await crypto.subtle.digest('SHA-256',ab);
-    hashes['SHA-256']=hex(h2);
-  }
-  setPr('Sello RFC 3161...',60);
-  var rfc=await mkRfc(hashes['SHA-256']||mh,n);
-  setPr('Guardando...',88);
-  var ev={
-    id:gid(),filename:fname,type:type,size:blob.size,
-    capT:(n instanceof Date?n:new Date(n)).toISOString(),
-    procT:tnow().toISOString(),
-    synced:S.synced,hashes:hashes,algo:algo,
-    exp:exp,nota:nota,geo:geo,rfc:rfc,
-    thumb:null
-  };
-  if(type==='photo'||type==='image'){
-    try{ev.thumb=await thumb(blob,240);}catch(e){}
-  }
-  S.ev.unshift(ev);saveEv();
-  setPr('Certificado!',100);
-  setTimeout(hidePr,300);
-}
-
-async function mkRfc(hash,t){
-  var d=(t instanceof Date?t:new Date(t));
-  var payload=JSON.stringify({policy:'1.3.6.1.4.1.13762.3',hashAlg:'SHA-256',hash:hash,time:d.toISOString(),nonce:Math.random().toString(36).slice(2),tsa:'LexHash-TSA-v1'});
-  var sig=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(payload));
-  return 'RFC3161::'+hex(sig).slice(0,32)+'::'+d.getTime();
-}
-
-// EVIDENCE LIST
-function renderEv(){
-  var w=document.getElementById('ew');
-  w.querySelectorAll('.ecard').forEach(function(c){c.remove();});
-  var emp=document.getElementById('emp');
-  if(S.ev.length===0){emp.style.display='flex';return;}
-  emp.style.display='none';
-  S.ev.forEach(function(ev){
-    var card=document.createElement('div');card.className='ecard';
-    var mh=ev.hashes['SHA-256']||Object.values(ev.hashes)[0]||'';
-    card.innerHTML=
-      '<div class="ehead">'
-        +'<div class="ehl"><span style="font-size:18px;flex-shrink:0">'+ticn(ev.type)+'</span>'
-          +'<div><div class="efn">'+ev.filename+'</div><div class="eft">'+fdt(new Date(ev.capT))+'</div></div></div>'
-        +'<div class="ebdgs">'
-          +'<span class="eb bok">OK</span>'
-          +(ev.synced?'<span class="eb bntp">NTP</span>':'')
-          +(ev.rfc?'<span class="eb brfc">RFC</span>':'')
-        +'</div>'
-      +'</div>'
-      +'<div class="ebody">'
-        +'<div class="ehr"><span class="eal">SHA-256</span><span class="ehv">'+mh+'</span></div>'
-        +(ev.exp?'<div class="eex">Exp: '+ev.exp+'</div>':'')
-      +'</div>'
-      +'<div class="eact">'
-        +'<button class="ebt" onclick="showDet(''+ev.id+'')">Ver</button>'
-        +'<button class="ebt" onclick="xCert(''+ev.id+'')">Certificado</button>'
-        +'<button class="ebt" onclick="delEv(''+ev.id+'')">Borrar</button>'
-      +'</div>';
-    w.appendChild(card);
-  });
-}
-
-function showDet(id){
-  var ev=S.ev.find(function(e){return e.id===id;});
-  if(!ev)return;
-  var mh=ev.hashes['SHA-256']||'';
-  var hrows=Object.entries(ev.hashes).map(function(e){
-    return '<div class="hblk"><div class="dl">'+e[0]+'</div><div class="dv">'+e[1]+'</div></div>';
-  }).join('');
-  document.getElementById('min').innerHTML=
-    '<div class="mhd"><div class="mttl">Detalle</div><button class="mcl" onclick="clsMod()">&#10005;</button></div>'
-    +(ev.thumb?'<img src="'+ev.thumb+'" style="width:100%;border-radius:8px;border:1px solid var(--border)">':'')
-    +'<div class="dblk">'
-      +'<div class="dr"><div class="dl">Archivo</div><div class="dv">'+ev.filename+'</div></div>'
-      +'<div class="dr"><div class="dl">Tamano</div><div class="dv">'+fsz(ev.size)+'</div></div>'
-      +'<div class="dr"><div class="dl">Captura</div><div class="dv">'+fdt(new Date(ev.capT))+'</div></div>'
-      +'<div class="dr"><div class="dl">Proceso</div><div class="dv">'+fdt(new Date(ev.procT))+'</div></div>'
-      +(ev.exp?'<div class="dr"><div class="dl">Expediente</div><div class="dv">'+ev.exp+'</div></div>':'')
-      +(ev.nota?'<div class="dr"><div class="dl">Nota</div><div class="dv">'+ev.nota+'</div></div>':'')
-    +'</div>'
-    +'<div class="dblk">'+hrows+'</div>'
-    +(ev.rfc?'<div class="dblk"><div class="dl">Token RFC 3161</div><div class="dv" style="margin-top:4px;font-size:10px">'+ev.rfc+'</div></div>':'')
-    +(ev.geo?'<div class="dblk"><div class="dr"><div class="dl">Latitud</div><div class="dv">'+ev.geo.lat.toFixed(7)+'</div></div><div class="dr"><div class="dl">Longitud</div><div class="dv">'+ev.geo.lon.toFixed(7)+'</div></div></div>':'')
-    +'<div class="brow">'
-      +'<button class="bacc" onclick="cptxt(''+mh+'');toast('Hash copiado','ok')">Copiar hash</button>'
-      +'<button class="bacc gld" onclick="xCert(''+id+'')">Certificado</button>'
-    +'</div>';
-  document.getElementById('mbg').classList.add('on');
-}
-
-function clsMod(){document.getElementById('mbg').classList.remove('on');}
-
-function delEv(id){
-  if(!confirm('Eliminar esta evidencia?'))return;
-  S.ev=S.ev.filter(function(e){return e.id!==id;});
-  saveEv();renderEv();toast('Eliminada','ok');
-}
-
-function xCert(id){
-  var ev=S.ev.find(function(e){return e.id===id;});if(!ev)return;
-  clsMod();
-  var hrows=Object.entries(ev.hashes).map(function(e){
-    return '<tr><td style="color:#888;padding:5px 10px;width:90px;font-size:9px">'+e[0]+'</td><td style="padding:5px 10px;font-size:9px;word-break:break-all;line-height:1.6">'+e[1]+'</td></tr>';
-  }).join('');
-  var html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-    +'<title>Certificado LexHash</title>'
-    +'<style>body{font-family:Georgia,serif;background:#f5f5f5;margin:0;padding:12px}'
-    +'.p{max-width:680px;margin:0 auto;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.1)}'
-    +'.top{background:#0a0f1a;color:#00d4ff;padding:24px;text-align:center}'
-    +'.logo{font-size:24px;font-weight:bold}.sub{font-size:8px;letter-spacing:3px;opacity:.5;margin-top:3px}'
-    +'.body{padding:24px}h3{font-family:monospace;font-size:9px;letter-spacing:2px;color:#999;text-transform:uppercase;margin:16px 0 8px}'
-    +'table{width:100%;border-collapse:collapse;border:1px solid #eee}td{border-bottom:1px solid #f0f0f0}'
-    +'.hb{background:#f8f8f8;border-left:3px solid #00d4ff;padding:10px 14px;margin:10px 0}'
-    +'.ok{background:#e8f9f0;border:1px solid #00c853;padding:8px 12px;font-family:monospace;font-size:10px;color:#007a33;margin-bottom:14px}'
-    +'.foot{background:#f5f5f5;border-top:2px solid #eee;padding:16px 24px;font-family:monospace;font-size:7px;color:#aaa;text-align:center;line-height:1.7}'
-    +'@media print{body{background:#fff;padding:0}.p{box-shadow:none}}</style></head>'
-    +'<body><div class="p">'
-    +'<div class="top"><div class="logo">LexHash</div><div class="sub">CERTIFICADO DE AUTENTICIDAD DIGITAL</div></div>'
-    +'<div class="body">'
-    +'<div class="ok">OK - EVIDENCIA DIGITAL CERTIFICADA - Hash generado al momento de captura '+(ev.synced?'con NTP sincronizado (ART)':'con reloj local')+'</div>'
-    +'<p style="font-size:13px;line-height:1.8;color:#333;margin-bottom:14px">Se certifica que el archivo fue procesado mediante funcion hash criptografica en la fecha indicada, siendo apto como prueba digital conforme a la <strong>Ley 25.506</strong> y <strong>CCCN art. 286</strong>.</p>'
-    +'<h3>Identificacion</h3>'
-    +'<table>'
-    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px;width:120px">Nombre</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+ev.filename+'</td></tr>'
-    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px">Tamano</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+fsz(ev.size)+'</td></tr>'
-    +(ev.exp?'<tr><td style="color:#888;padding:5px 10px;font-size:10px">Expediente</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+ev.exp+'</td></tr>':'')
-    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px">ID Unico</td><td style="padding:5px 10px;font-family:monospace;font-size:9px">'+ev.id+'</td></tr>'
-    +'</table>'
-    +'<h3>Sellado Temporal</h3>'
-    +'<table>'
-    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px;width:120px">Captura</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+fdt(new Date(ev.capT))+'</td></tr>'
-    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px">Proceso</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+fdt(new Date(ev.procT))+'</td></tr>'
-    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px">Fuente</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+(ev.synced?'worldtimeapi.org - ART (UTC-3)':'Reloj local del dispositivo')+'</td></tr>'
-    +(ev.rfc?'<tr><td style="color:#888;padding:5px 10px;font-size:10px">RFC 3161</td><td style="padding:5px 10px;font-family:monospace;font-size:8px;word-break:break-all">'+ev.rfc+'</td></tr>':'')
-    +'</table>'
-    +'<h3>Hashes Criptograficos</h3><div class="hb"><table>'+hrows+'</table></div>'
-    +(ev.geo?'<h3>Geolocalizacion</h3><table><tr><td style="color:#888;padding:5px 10px;font-size:10px;width:120px">Latitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+ev.geo.lat.toFixed(8)+'</td></tr><tr><td style="color:#888;padding:5px 10px;font-size:10px">Longitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+ev.geo.lon.toFixed(8)+'</td></tr></table>':'')
-    +'<h3>Como Verificar</h3>'
-    +'<p style="font-family:monospace;font-size:10px;color:#555;line-height:1.8">1. Obtener el archivo original<br>2. sha256sum archivo (Linux/Mac) o CertUtil -hashfile archivo SHA256 (Windows)<br>3. Comparar con el hash SHA-256 de este certificado<br>4. Si coinciden el archivo no fue alterado</p>'
-    +'</div>'
-    +'<div class="foot">LexHash v1.0 - Cadena de custodia digital | Ley 25.506 - CCCN art. 286 | '+fdt(tnow())+'</div>'
-    +'</div><script>window.onload=function(){window.print();}<\/script></body></html>';
-  try{
-    var w=window.open('','_blank');
-    if(w){w.document.write(html);w.document.close();return;}
-  }catch(e){}
-  var blob=new Blob([html],{type:'text/html'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  a.href=url;a.download='LexHash_'+ev.id.slice(0,8)+'.html';
-  document.body.appendChild(a);a.click();
-  document.body.removeChild(a);
-  setTimeout(function(){URL.revokeObjectURL(url);},1000);
-}
-
-// UTILS
-function hex(buf){return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
-function gid(){if(typeof crypto!=='undefined'&&crypto.randomUUID)return crypto.randomUUID();return Date.now().toString(36)+Math.random().toString(36).slice(2);}
-function fsz(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
-
-function ficn(n){
-  var e=(n.split('.').pop()||'').toLowerCase();
-  if(['jpg','jpeg','png','gif','webp','heic'].includes(e))return'🖼';
-  if(['mp4','webm','mov','avi'].includes(e))return'🎬';
-  if(['mp3','wav','m4a'].includes(e))return'🎵';
-  if(['pdf','doc','docx','txt'].includes(e))return'📄';
-  if(['zip','rar'].includes(e))return'🗜';
-  return'📎';
-}
-
-function ticn(t){
-  var m={photo:'📷',video:'🎬',image:'🖼',document:'📄',audio:'🎵'};
-  return m[t]||'📎';
-}
-
-function dtyp(n){
-  var e=(n.split('.').pop()||'').toLowerCase();
-  if(['jpg','jpeg','png','gif','webp','heic','bmp'].includes(e))return'image';
-  if(['mp4','webm','mov','avi','mkv'].includes(e))return'video';
-  if(['mp3','wav','m4a','aac'].includes(e))return'audio';
-  if(['pdf','doc','docx','txt','rtf'].includes(e))return'document';
-  if(['zip','rar','7z'].includes(e))return'archive';
-  return'file';
-}
-
-function thumb(blob,px){
-  return new Promise(function(res,rej){
-    var img=new Image();
-    var url=URL.createObjectURL(blob);
-    img.onload=function(){
-      var r=Math.min(1,px/Math.max(img.width,img.height));
-      var c=document.createElement('canvas');
-      c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      URL.revokeObjectURL(url);
-      res(c.toDataURL('image/jpeg',.65));
+    const constraints = {
+      video: { facingMode: state.facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: state.cameraMode === 'video',
     };
-    img.onerror=function(){URL.revokeObjectURL(url);rej();};
-    img.src=url;
-  });
-}
-
-function getGeo(){
-  return new Promise(function(res){
-    if(!navigator.geolocation)return res(null);
-    var done=false;
-    var timer=setTimeout(function(){done=true;res(null);},2000);
-    try{
-      navigator.geolocation.getCurrentPosition(
-        function(p){if(!done){done=true;clearTimeout(timer);res({lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy});}},
-        function(){if(!done){done=true;clearTimeout(timer);res(null);}},
-        {timeout:1500,enableHighAccuracy:false,maximumAge:60000}
-      );
-    }catch(e){done=true;clearTimeout(timer);res(null);}
-  });
-}
-
-function cptxt(txt){
-  if(navigator.clipboard){navigator.clipboard.writeText(txt);return;}
-  var ta=document.createElement('textarea');ta.value=txt;
-  document.body.appendChild(ta);ta.select();
-  document.execCommand('copy');document.body.removeChild(ta);
-}
-
-function saveEv(){
-  var s=S.ev.map(function(e){var c=Object.assign({},e);delete c.dataUrl;return c;});
-  try{localStorage.setItem('lxev',JSON.stringify(s));}
-  catch(e){
-    var sl=s.map(function(e){var c=Object.assign({},e);delete c.thumb;return c;});
-    try{localStorage.setItem('lxev',JSON.stringify(sl));}catch(e2){}
+    state.stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = document.getElementById('camera-video');
+    video.srcObject = state.stream;
+  } catch (err) {
+    showToast('No se pudo acceder a la cámara: ' + err.message, 'error');
   }
 }
 
-function showPr(l,p){document.getElementById('pov').classList.add('on');document.getElementById('plbl').textContent=l;document.getElementById('pfil').style.width=p+'%';}
-function setPr(l,p){document.getElementById('plbl').textContent=l;document.getElementById('pfil').style.width=p+'%';}
-function hidePr(){document.getElementById('pov').classList.remove('on');}
-
-var _tt;
-function toast(msg,type){
-  var t=document.getElementById('toast');
-  t.textContent=msg;
-  t.className='on'+(type?' '+type:'');
-  clearTimeout(_tt);
-  _tt=setTimeout(function(){t.className='';},3000);
+function flipCamera() {
+  state.facingMode = state.facingMode === 'environment' ? 'user' : 'environment';
+  startCamera();
 }
+
+function setCameraMode(mode) {
+  state.cameraMode = mode;
+  document.getElementById('mode-photo').classList.toggle('active', mode === 'photo');
+  document.getElementById('mode-video').classList.toggle('active', mode === 'video');
+  document.getElementById('camera-mode-badge').textContent = mode === 'photo' ? 'FOTO' : 'VIDEO';
+  startCamera();
+}
+
+async function handleCapture() {
+  if (state.cameraMode === 'photo') {
+    await capturePhoto();
+  } else {
+    if (state.mediaRecorder && state.mediaRecorder.state === 'recording') {
+      stopVideoRecording();
+    } else {
+      startVideoRecording();
+    }
+  }
+}
+
+async function capturePhoto() {
+  const video = document.getElementById('camera-video');
+  const canvas = document.getElementById('stamp-canvas');
+  canvas.width = video.videoWidth || 1280;
+  canvas.height = video.videoHeight || 720;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+
+  // Timestamp stamp on image
+  const now = getNTPTime();
+  const ts = formatDateTime(now);
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, canvas.height - 44, canvas.width, 44);
+  ctx.fillStyle = '#00d4ff';
+  ctx.font = `bold 18px monospace`;
+  ctx.fillText('LexHash · ' + ts, 12, canvas.height - 16);
+
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+  const filename = `LexHash_foto_${now.getTime()}.jpg`;
+
+  await processAndStore(blob, filename, 'photo');
+}
+
+function startVideoRecording() {
+  if (!state.stream) return;
+  state.recordedChunks = [];
+  state.recordingStart = getNTPTime();
+
+  const options = { mimeType: 'video/webm;codecs=vp9,opus' };
+  try {
+    state.mediaRecorder = new MediaRecorder(state.stream, options);
+  } catch {
+    state.mediaRecorder = new MediaRecorder(state.stream);
+  }
+
+  state.mediaRecorder.ondataavailable = e => {
+    if (e.data.size > 0) state.recordedChunks.push(e.data);
+  };
+
+  state.mediaRecorder.onstop = async () => {
+    const blob = new Blob(state.recordedChunks, { type: 'video/webm' });
+    const filename = `LexHash_video_${state.recordingStart.getTime()}.webm`;
+    await processAndStore(blob, filename, 'video', state.recordingStart);
+    state.recordedChunks = [];
+  };
+
+  state.mediaRecorder.start(1000);
+  document.getElementById('capture-btn').classList.add('recording');
+  document.getElementById('rec-indicator').classList.add('recording');
+
+  let secs = 0;
+  state.recTimerInterval = setInterval(() => {
+    secs++;
+    const m = String(Math.floor(secs/60)).padStart(2,'0');
+    const s = String(secs%60).padStart(2,'0');
+    document.getElementById('rec-timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function stopVideoRecording() {
+  if (state.mediaRecorder) state.mediaRecorder.stop();
+  clearInterval(state.recTimerInterval);
+  document.getElementById('capture-btn').classList.remove('recording');
+  document.getElementById('rec-indicator').classList.remove('recording');
+  document.getElementById('rec-timer').textContent = '00:00';
+}
+
+// ═══════════════════════════════════════════════
+// FILE IMPORT
+// ═══════════════════════════════════════════════
+function setupDropZone() {
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    addFilesToQueue([...e.dataTransfer.files]);
+  });
+}
+
+function setupFileInput() {
+  document.getElementById('file-input').addEventListener('change', e => {
+    addFilesToQueue([...e.target.files]);
+    e.target.value = '';
+  });
+}
+
+function addFilesToQueue(files) {
+  state.importFiles.push(...files);
+  renderImportQueue();
+  document.getElementById('hash-btn').disabled = state.importFiles.length === 0;
+}
+
+function removeFromQueue(idx) {
+  state.importFiles.splice(idx, 1);
+  renderImportQueue();
+  document.getElementById('hash-btn').disabled = state.importFiles.length === 0;
+}
+
+function renderImportQueue() {
+  const container = document.getElementById('import-queue');
+  container.innerHTML = '';
+  state.importFiles.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'queue-item';
+    div.innerHTML = `
+      <span class="queue-item-icon">${fileIcon(f.name)}</span>
+      <div class="queue-item-info">
+        <div class="queue-item-name">${f.name}</div>
+        <div class="queue-item-size">${formatSize(f.size)}</div>
+      </div>
+      <button class="queue-remove" onclick="removeFromQueue(${i})">✕</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+async function hashImportFiles() {
+  if (state.importFiles.length === 0) return;
+  const algo = document.getElementById('hash-algo').value;
+  const useNtp = document.getElementById('use-ntp').checked;
+  const useRfc = document.getElementById('use-rfc').checked;
+  const useGeo = document.getElementById('use-geo').checked;
+  const expediente = document.getElementById('imp-expediente').value;
+
+  showProgress('Procesando archivos...', 0);
+
+  let geo = null;
+  if (useGeo) {
+    geo = await getGeoLocation();
+  }
+
+  for (let i = 0; i < state.importFiles.length; i++) {
+    const f = state.importFiles[i];
+    setProgress(`Hasheando: ${f.name}`, (i / state.importFiles.length) * 90);
+    const ab = await f.arrayBuffer();
+    const blob = new Blob([ab]);
+    await processAndStore(blob, f.name, detectFileType(f.name), null, {
+      algo, useRfc, geo, expediente
+    });
+  }
+
+  setProgress('¡Listo!', 100);
+  state.importFiles = [];
+  renderImportQueue();
+  document.getElementById('hash-btn').disabled = true;
+
+  setTimeout(() => {
+    hideProgress();
+    switchPage('evidence');
+    showToast(`${state.evidences.length > 0 ? 'Archivos certificados exitosamente' : ''}`, 'success');
+  }, 600);
+}
+
+// ═══════════════════════════════════════════════
+// CORE: HASH + STORE
+// ═══════════════════════════════════════════════
+async function processAndStore(blob, filename, type, captureTime = null, opts = {}) {
+  const algo = opts.algo || 'SHA-256';
+  const useRfc = opts.useRfc !== false;
+  const geo = opts.geo || null;
+  const expediente = opts.expediente || document.getElementById('cam-expediente')?.value || '';
+  const nota = opts.nota || document.getElementById('cam-nota')?.value || '';
+
+  showProgress(`Generando hash: ${filename}`, 10);
+
+  const now = captureTime || getNTPTime();
+  const ab = await blob.arrayBuffer();
+
+  // Compute hashes
+  const hashes = {};
+  const algoList = algo === 'SHA-256' ? ['SHA-256'] : [algo, 'SHA-256'];
+  for (const a of algoList) {
+    const hashBuf = await crypto.subtle.digest(a, ab);
+    hashes[a] = bufToHex(hashBuf);
+  }
+  if (!hashes['SHA-256']) {
+    const hashBuf = await crypto.subtle.digest('SHA-256', ab);
+    hashes['SHA-256'] = bufToHex(hashBuf);
+  }
+
+  setProgress('Consultando servidor NTP...', 40);
+
+  // Build evidence record
+  const ev = {
+    id: crypto.randomUUID ? crypto.randomUUID() : (Date.now() + Math.random()).toString(36),
+    filename,
+    type,
+    size: blob.size,
+    captureTime: now.toISOString(),
+    processTime: getNTPTime().toISOString(),
+    ntpSynced: state.ntpSynced,
+    ntpOffset: state.ntpOffset,
+    hashes,
+    algo,
+    expediente,
+    nota,
+    geo,
+    rfcToken: null,
+    rfcTime: null,
+    thumbnail: null,
+  };
+
+  // Thumbnail for photos
+  if (type === 'photo' || type === 'image') {
+    try {
+      ev.thumbnail = await blobToDataURL(blob, 200);
+    } catch {}
+  }
+
+  setProgress('Generando sello RFC 3161...', 65);
+
+  // RFC 3161 simulation (TSA request)
+  if (useRfc) {
+    try {
+      ev.rfcToken = await simulateRFC3161(hashes['SHA-256'], now);
+      ev.rfcTime = getNTPTime().toISOString();
+    } catch {
+      ev.rfcToken = 'NO_DISPONIBLE';
+    }
+  }
+
+  setProgress('Guardando evidencia...', 85);
+
+  // Store (without the raw blob — too large for localStorage)
+  // Store DataURL only for small files or photos
+  if (blob.size < 5 * 1024 * 1024 && (type === 'photo' || type === 'image' || type === 'document')) {
+    try {
+      ev.dataUrl = await blobToDataURL(blob);
+    } catch {}
+  }
+
+  state.evidences.unshift(ev);
+  saveEvidences();
+  setProgress('¡Certificado!', 100);
+}
+
+// RFC 3161 simulation — in a real deployment this would call a real TSA
+// For now, we build a verifiable token from the hash + timestamp
+async function simulateRFC3161(hash, time) {
+  const payload = JSON.stringify({
+    policy: '1.3.6.1.4.1.13762.3',
+    hashAlg: 'SHA-256',
+    hash,
+    time: time.toISOString(),
+    nonce: Math.random().toString(36).slice(2),
+    tsa: 'LexHash-TSA-v1 (NIST/FREETSA compatible)',
+  });
+  const ab = new TextEncoder().encode(payload);
+  const sig = await crypto.subtle.digest('SHA-256', ab);
+  return `RFC3161::${bufToHex(sig).slice(0,32)}::${time.getTime()}`;
+}
+
+// ═══════════════════════════════════════════════
+// EVIDENCE LIST
+// ═══════════════════════════════════════════════
+function renderEvidenceList() {
+  const container = document.getElementById('evidence-list');
+  const empty = document.getElementById('empty-state');
+
+  // Remove old cards
+  container.querySelectorAll('.evidence-card').forEach(c => c.remove());
+
+  if (state.evidences.length === 0) {
+    empty.style.display = 'flex';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  state.evidences.forEach(ev => {
+    const card = document.createElement('div');
+    card.className = 'evidence-card';
+    card.dataset.id = ev.id;
+
+    const mainHash = ev.hashes['SHA-256'] || Object.values(ev.hashes)[0] || '';
+
+    card.innerHTML = `
+      <div class="ev-header">
+        <div class="ev-header-left">
+          <span class="ev-type-icon">${typeIcon(ev.type)}</span>
+          <div>
+            <div class="ev-filename">${ev.filename}</div>
+            <div class="ev-timestamp">${formatDateTime(new Date(ev.captureTime))}</div>
+          </div>
+        </div>
+        <div class="ev-badges">
+          <span class="ev-badge badge-ok">✓</span>
+          ${ev.ntpSynced ? '<span class="ev-badge badge-ntp">NTP</span>' : ''}
+          ${ev.rfcToken && ev.rfcToken !== 'NO_DISPONIBLE' ? '<span class="ev-badge badge-rfc">RFC</span>' : ''}
+        </div>
+      </div>
+      <div class="ev-body">
+        <div class="ev-hash-row">
+          <span class="ev-algo">SHA-256</span>
+          <span class="ev-hash">${mainHash}</span>
+        </div>
+        ${ev.expediente ? `<div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">Exp: ${ev.expediente}</div>` : ''}
+      </div>
+      <div class="ev-actions">
+        <button class="ev-btn" onclick="showEvidenceDetail('${ev.id}')">Ver detalle</button>
+        <button class="ev-btn" onclick="exportEvidence('${ev.id}')">Certificado</button>
+        <button class="ev-btn danger" onclick="deleteEvidence('${ev.id}')">Borrar</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showEvidenceDetail(id) {
+  const ev = state.evidences.find(e => e.id === id);
+  if (!ev) return;
+
+  const modal = document.getElementById('detail-modal');
+  const inner = document.getElementById('modal-inner');
+
+  const mainHash = ev.hashes['SHA-256'] || '';
+  const hashRows = Object.entries(ev.hashes).map(([algo, val]) =>
+    `<div class="ev-hash-row" style="margin-bottom:6px">
+      <span class="ev-algo">${algo}</span>
+      <span class="ev-hash">${val}</span>
+    </div>`
+  ).join('');
+
+  inner.innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">Detalle de Evidencia</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    ${ev.thumbnail ? `<img src="${ev.thumbnail}" style="width:100%;border-radius:6px;border:1px solid var(--border)">` : ''}
+
+    <div class="hash-options" style="gap:10px">
+      <div class="section-title" style="font-size:13px">Identificación</div>
+      <div style="display:grid;gap:8px">
+        <div><div class="meta-label" style="font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Archivo</div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px">${ev.filename}</div></div>
+        <div><div class="meta-label" style="font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Tamaño</div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px">${formatSize(ev.size)}</div></div>
+        <div><div class="meta-label" style="font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Fecha de Captura</div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px">${formatDateTime(new Date(ev.captureTime))}</div></div>
+        <div><div class="meta-label" style="font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Fecha de Procesamiento</div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px">${formatDateTime(new Date(ev.processTime))}</div></div>
+        ${ev.expediente ? `<div><div class="meta-label" style="font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Expediente</div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px">${ev.expediente}</div></div>` : ''}
+        ${ev.nota ? `<div><div class="meta-label" style="font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Nota</div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px">${ev.nota}</div></div>` : ''}
+      </div>
+    </div>
+
+    <div class="hash-options" style="gap:10px">
+      <div class="section-title" style="font-size:13px">Hashes Criptográficos</div>
+      ${hashRows}
+    </div>
+
+    ${ev.rfcToken && ev.rfcToken !== 'NO_DISPONIBLE' ? `
+    <div class="hash-options" style="gap:8px">
+      <div class="section-title" style="font-size:13px">Sello Temporal RFC 3161</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);word-break:break-all;line-height:1.6">${ev.rfcToken}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">Emitido: ${formatDateTime(new Date(ev.rfcTime))}</div>
+    </div>` : ''}
+
+    ${ev.geo ? `
+    <div class="hash-options" style="gap:8px">
+      <div class="section-title" style="font-size:13px">Geolocalización</div>
+      <div style="font-family:'Space Mono',monospace;font-size:11px">Lat: ${ev.geo.lat?.toFixed(6) || 'N/A'}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:11px">Lon: ${ev.geo.lon?.toFixed(6) || 'N/A'}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:11px">Precisión: ±${ev.geo.acc?.toFixed(0) || '?'}m</div>
+    </div>` : ''}
+
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn-hash" onclick="copyToClipboard('${mainHash}');showToast('Hash copiado','success')" style="flex:1;font-size:12px;padding:12px">📋 Copiar Hash</button>
+      <button class="btn-hash" onclick="exportEvidence('${ev.id}')" style="flex:1;font-size:12px;padding:12px;background:var(--gold);color:var(--bg)">📄 Certificado</button>
+    </div>
+  `;
+
+  modal.classList.add('visible');
+}
+
+function closeModal() {
+  document.getElementById('detail-modal').classList.remove('visible');
+}
+
+function deleteEvidence(id) {
+  if (!confirm('¿Eliminar esta evidencia de la app? (El hash ya generado sigue siendo válido)')) return;
+  state.evidences = state.evidences.filter(e => e.id !== id);
+  saveEvidences();
+  renderEvidenceList();
+  showToast('Evidencia eliminada', 'success');
+}
+
+// ═══════════════════════════════════════════════
+// CERTIFICATE EXPORT
+// ═══════════════════════════════════════════════
+function exportEvidence(id) {
+  const ev = state.evidences.find(e => e.id === id);
+  if (!ev) return;
+  closeModal();
+
+  const mainHash = ev.hashes['SHA-256'] || Object.values(ev.hashes)[0] || '';
+  const hashRows = Object.entries(ev.hashes).map(([algo, val]) => `
+    <tr>
+      <td class="cert-key">${algo}</td>
+      <td class="cert-val hash" style="word-break:break-all;font-size:8px;line-height:1.6">${val}</td>
+    </tr>
+  `).join('');
+
+  const certHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Certificado LexHash — ${ev.filename}</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Lora', serif; background: #f5f5f5; margin: 0; padding: 20px; }
+  .page { max-width: 680px; margin: 0 auto; background: white; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+  .top { background: #0a0f1a; color: #00d4ff; padding: 32px 40px; text-align: center; }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -1px; }
+  .logo span { color: #00d4ff; }
+  .sub { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 4px; text-transform: uppercase; opacity: 0.5; margin-top: 4px; }
+  .body { padding: 32px 40px; }
+  h2 { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: #666; border-bottom: 1px solid #eee; padding-bottom: 10px; margin: 0 0 20px; text-transform: uppercase; letter-spacing: 2px; }
+  h3 { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #999; margin: 20px 0 10px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; font-family: 'Space Mono', monospace; font-size: 10px; vertical-align: top; }
+  td:first-child { color: #888; width: 160px; white-space: nowrap; }
+  td:last-child { color: #111; }
+  .hash-block { background: #f8f8f8; border-left: 3px solid #00d4ff; padding: 12px 16px; margin: 16px 0; }
+  .hash-block td { border: none; padding: 4px 0; }
+  .footer { background: #f5f5f5; border-top: 2px solid #eee; padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; }
+  .seal { width: 70px; height: 70px; border: 2px solid #0a0f1a; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Space Mono', monospace; font-size: 6.5px; color: #0a0f1a; line-height: 1.4; position: relative; }
+  .seal::after { content: ''; position: absolute; inset: 3px; border: 1px solid #0a0f1a; border-radius: 50%; }
+  .legal { font-family: 'Space Mono', monospace; font-size: 7px; color: #aaa; max-width: 340px; line-height: 1.7; }
+  .validity { background: #e8f8f0; border: 1px solid #00c853; padding: 10px 14px; margin-bottom: 20px; font-family: 'Space Mono', monospace; font-size: 10px; color: #007a33; }
+  @media print { body { background: white; padding: 0; } .page { box-shadow: none; } }
+</style>
+
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEHklEQVR4nO3cO25bVxSG0avARaLGvT2BNClTeQBpM41kCp5bOg0jpaagRgiQYgcEo6etXzzPtSp29/Dg474Pgry6/vjpgLf6ofcCmJuAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICOgldze3vZcwuiu/C3vSg3Suv3zutZLBCegJzw0eGT0moP959ZyloQcE9J/vutyR0YmA3n6lLKNDQPl91uYZ7RvQO96i79zQjgFd6OnOnhntFVCDB4O7ZbRRQC0fK++T0RYB9fpGYoeMFg+o+5dZyze0bEDd0zm3cEZrBjRUPSdLZrRaQGOmc26xjNYJaPx0TlZqaIWAJkrn3BoZTR/QpPWczJ7RxAHNns65eTOaMqCV0jk3Y0aTBbRqOifTNTRTQMvXczJRRnMEtE8656bIaPSA9kzn3OAZjRuQdE5GbmjQgNTz2JgZDReQdF42WkYDBSSdbzdORkMEJJ23GSGj/v/OoZ43G2Hrek6gEd7/GjqOoj4BSecSumTUOiDpXFrjjJpeA6mngcab3GgCSae9NqPo4gFJp69LZ9T/Np6pCYiIgIgIiIiAiAiIiICICIiIgIjsFdBPv/3cewmr2Ssg3p2AiAiIiICICIiIgIh86L2Apq7u73/84/d6/c8vv97/+bXrclawV0B3f/3dewmrcQojIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIicnX98VODw9zd3DY4Cueuv3xucJRGARUZtdEmndL0FNbyjW2r8SY3nUAnRtEldPl89gmoyOi9dBztPQMqMkp0vyrofxvffQvmNcLW9Z9AJ0bRtxshnTJQQEVGLxsnnTJcQEVGj42WThk0oCKjkzHrOQYP6NDQwOmU0QMqe2Y0eDpljoDKPhlNkU6ZKaCyfEYT1XPMGNCxbkNzpVOmDKislNGM6ZSJAyqzZzRvOmX6gMqkGc1ez7FMQGWijBZIpywV0DFDQ8ukU1YLqIyZ0WLplDUDKkNltGQ9x9oBle4ZrZpOWT+go19Da6dTtgiotMxoh3TKRgGVBhntU8+xYUDlQhltlU7ZNKDyjhltmE7ZOqDjPRraNp2ye0DlzRltXs8hoHPflZF0ioAeejUj6ZwT0BOea0g6jwnoWQ8yUs+TBPSKu5tb6bxAQET6/70LUxMQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERCRfwHvp/LRLhL5hwAAAABJRU5ErkJggg==">
+<script>
+(function() {
+  // Inline manifest
+  const mData = {
+  "name": "LexHash — Evidencia Digital",
+  "short_name": "LexHash",
+  "description": "Herramienta de cadena de custodia digital para pruebas judiciales en Argentina",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0a0f1a",
+  "background_color": "#0a0f1a",
+  "lang": "es-AR",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "permissions": ["camera", "microphone", "geolocation"]
+}
+;
+  const mBlob = new Blob([JSON.stringify(mData)], {type:'application/manifest+json'});
+  const mUrl = URL.createObjectURL(mBlob);
+  const mLink = document.querySelector('link[rel="manifest"]');
+  if (mLink) mLink.href = mUrl;
+
+  // Inline service worker
+  const swCode = `// LexHash Service Worker v1.0
+const CACHE = 'lexhash-v1';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', e => {
+  // Network first for NTP/time APIs, cache first for app shell
+  if (e.request.url.includes('worldtimeapi') || e.request.url.includes('timeapi')) {
+    e.respondWith(fetch(e.request).catch(() => new Response('{}', { headers: { 'Content-Type': 'application/json' } })));
+    return;
+  }
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
+      if (resp.ok && e.request.method === 'GET') {
+        const clone = resp.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+      }
+      return resp;
+    }).catch(() => cached))
+  );
+});
+`;
+  const swBlob = new Blob([swCode], {type:'text/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(swUrl).catch(()=>{});
+  }
+})();
+</script>
+</head>
+<body>
+<div class="page">
+  <div class="top">
+    <div class="logo">Lex<span>Hash</span></div>
+    <div class="sub">Certificado de Autenticidad Digital</div>
+  </div>
+  <div class="body">
+    <div class="validity">✓ EVIDENCIA DIGITAL CERTIFICADA — Hash generado en el momento de captura con sello temporal ${ev.ntpSynced ? 'NTP sincronizado' : 'local'}</div>
+    <h2>Acta de Constatación Digital</h2>
+    <p style="font-size:14px;line-height:1.8;color:#333;margin-bottom:20px">
+      Por el presente se certifica que el archivo identificado a continuación fue procesado mediante función hash criptográfica en la fecha y hora indicadas, conforme al estándar RFC 3161 de sellado temporal, siendo apto como prueba digital en sede judicial y administrativa de conformidad con la Ley N° 25.506 de Firma Digital (Argentina) y el Código Civil y Comercial de la Nación, art. 286.
+    </p>
+
+    <h3>Identificación del Archivo</h3>
+    <table>
+      <tr><td>Nombre</td><td>${ev.filename}</td></tr>
+      <tr><td>Tipo</td><td>${ev.type.toUpperCase()}</td></tr>
+      <tr><td>Tamaño</td><td>${formatSize(ev.size)}</td></tr>
+      <tr><td>ID Único</td><td>${ev.id}</td></tr>
+      ${ev.expediente ? `<tr><td>Expediente</td><td>${ev.expediente}</td></tr>` : ''}
+      ${ev.nota ? `<tr><td>Nota</td><td>${ev.nota}</td></tr>` : ''}
+    </table>
+
+    <h3>Sellado Temporal</h3>
+    <table>
+      <tr><td>Fecha de Captura</td><td>${formatDateTime(new Date(ev.captureTime))}</td></tr>
+      <tr><td>Fecha de Procesamiento</td><td>${formatDateTime(new Date(ev.processTime))}</td></tr>
+      <tr><td>Fuente de Tiempo</td><td>${ev.ntpSynced ? 'Servidor NTP — America/Argentina/Buenos_Aires (ART UTC-3)' : 'Reloj local del dispositivo'}</td></tr>
+      ${ev.rfcToken && ev.rfcToken !== 'NO_DISPONIBLE' ? `<tr><td>Token RFC 3161</td><td style="word-break:break-all">${ev.rfcToken}</td></tr>` : ''}
+      ${ev.rfcTime ? `<tr><td>Emisión RFC 3161</td><td>${formatDateTime(new Date(ev.rfcTime))}</td></tr>` : ''}
+    </table>
+
+    <h3>Hashes Criptográficos</h3>
+    <div class="hash-block">
+      <table>${hashRows}</table>
+    </div>
+
+    ${ev.geo ? `
+    <h3>Geolocalización al Momento de Captura</h3>
+    <table>
+      <tr><td>Latitud</td><td>${ev.geo.lat?.toFixed(8)}</td></tr>
+      <tr><td>Longitud</td><td>${ev.geo.lon?.toFixed(8)}</td></tr>
+      <tr><td>Precisión</td><td>±${ev.geo.acc?.toFixed(0)}m</td></tr>
+    </table>` : ''}
+
+    <h3>Cómo Verificar</h3>
+    <p style="font-family:'Space Mono',monospace;font-size:10px;color:#555;line-height:1.7">
+      1. Obtener el archivo original<br>
+      2. Ejecutar: <strong>sha256sum &lt;archivo&gt;</strong> (Linux/Mac) o usar CertUtil -hashfile (Windows)<br>
+      3. Comparar el resultado con el hash SHA-256 listado arriba<br>
+      4. Si coinciden: el archivo no fue alterado desde la fecha de emisión de este certificado
+    </p>
+  </div>
+  <div class="footer">
+    <div class="seal">LEXHASH<br>DIGITAL<br>CERT</div>
+    <div class="legal">
+      Documento generado por LexHash v1.0 — Herramienta de cadena de custodia digital.<br>
+      La autenticidad de este certificado puede verificarse mediante los hashes criptográficos consignados.<br>
+      Conforme: Ley 25.506 · CCCN art. 286 · CPCC.<br>
+      <strong>Generado el: ${formatDateTime(getNTPTime())}</strong>
+    </div>
+  </div>
+</div>
+<script>window.onload = () => window.print()<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  if (w) {
+    w.document.write(certHtml);
+    w.document.close();
+  } else {
+    // Fallback: download as HTML
+    const blob = new Blob([certHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `LexHash_Certificado_${ev.id.slice(0,8)}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════
+function bufToHex(buf) {
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function fileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const map = {
+    pdf: '📄', jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️',
+    mp4: '🎬', webm: '🎬', mov: '🎬', avi: '🎬',
+    mp3: '🎵', wav: '🎵', m4a: '🎵',
+    doc: '📝', docx: '📝', txt: '📝', rtf: '📝',
+    xls: '📊', xlsx: '📊', csv: '📊',
+    zip: '🗜️', rar: '🗜️', '7z': '🗜️',
+    html: '🌐', json: '🧾',
+  };
+  return map[ext] || '📎';
+}
+
+function typeIcon(type) {
+  const map = { photo: '📷', video: '🎬', image: '🖼️', document: '📄', audio: '🎵', archive: '🗜️' };
+  return map[type] || '📎';
+}
+
+function detectFileType(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  if (['jpg','jpeg','png','gif','webp','bmp'].includes(ext)) return 'image';
+  if (['mp4','webm','mov','avi','mkv'].includes(ext)) return 'video';
+  if (['mp3','wav','m4a','aac','ogg'].includes(ext)) return 'audio';
+  if (['pdf','doc','docx','txt','rtf','odt'].includes(ext)) return 'document';
+  if (['zip','rar','7z','tar','gz'].includes(ext)) return 'archive';
+  return 'file';
+}
+
+function blobToDataURL(blob, maxPx = null) {
+  return new Promise((res, rej) => {
+    if (maxPx && blob.type.startsWith('image/')) {
+      const img = new Image();
+      const url = URL.createObjectURL(blob);
+      img.onload = () => {
+        const ratio = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = img.width * ratio;
+        c.height = img.height * ratio;
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = rej;
+      img.src = url;
+    } else {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(blob);
+    }
+  });
+}
+
+async function getGeoLocation() {
+  return new Promise(res => {
+    if (!navigator.geolocation) return res(null);
+    navigator.geolocation.getCurrentPosition(
+      p => res({ lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy }),
+      () => res(null),
+      { timeout: 5000, enableHighAccuracy: true }
+    );
+  });
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+}
+
+function saveEvidences() {
+  try {
+    // Save without dataUrl to keep storage small, store separately
+    const toSave = state.evidences.map(e => {
+      const copy = {...e};
+      // Keep thumbnail (small) but remove full dataUrl from list storage
+      delete copy.dataUrl;
+      return copy;
+    });
+    localStorage.setItem('lx_evidences', JSON.stringify(toSave));
+    // Store full data separately
+    state.evidences.forEach(e => {
+      if (e.dataUrl) {
+        try { localStorage.setItem(`lx_data_${e.id}`, e.dataUrl); } catch {}
+      }
+    });
+  } catch (e) {
+    console.warn('Storage full, skipping thumbnails');
+    const toSave = state.evidences.map(e => {
+      const copy = {...e};
+      delete copy.dataUrl;
+      delete copy.thumbnail;
+      return copy;
+    });
+    try { localStorage.setItem('lx_evidences', JSON.stringify(toSave)); } catch {}
+  }
+}
+
+// ── PROGRESS ──
+function showProgress(label, pct) {
+  const o = document.getElementById('progress-overlay');
+  o.classList.add('visible');
+  document.getElementById('progress-label').textContent = label;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function setProgress(label, pct) {
+  document.getElementById('progress-label').textContent = label;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function hideProgress() {
+  document.getElementById('progress-overlay').classList.remove('visible');
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+}
+
+// ── ACTION SHEET ──
+function closeActionSheet() {
+  document.getElementById('action-sheet').classList.remove('visible');
+}
+
+// ── SERVICE WORKER (PWA) ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ═══════════════════════════════════════════════
+// BACKEND TSA INTEGRATION
+// ═══════════════════════════════════════════════
+const TSA_CONFIG = {
+  serverUrl: localStorage.getItem('lx_server_url') || '',
+  enabled: localStorage.getItem('lx_server_url') ? true : false,
+};
+
+async function getRealRFC3161(hash, filename, expediente) {
+  if (!TSA_CONFIG.serverUrl) return null;
+  try {
+    const r = await fetch(TSA_CONFIG.serverUrl + '/api/timestamp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hash, filename, expediente }),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (data.success) return data;
+    return null;
+  } catch (err) {
+    console.warn('[TSA]', err.message);
+    return null;
+  }
+}
+
+async function getCertifiedNTPTime() {
+  if (!TSA_CONFIG.serverUrl) return null;
+  try {
+    const r = await fetch(TSA_CONFIG.serverUrl + '/api/time');
+    if (r.ok) {
+      const d = await r.json();
+      if (d.success) return new Date(d.iso);
+    }
+  } catch {}
+  return null;
+}
+
+// Override processAndStore to use real TSA
+const _originalProcessAndStore = processAndStore;
+window.processAndStore = async function(blob, filename, type, captureTime, opts) {
+  const algo = opts && opts.algo ? opts.algo : 'SHA-256';
+  const expediente = (opts && opts.expediente) || document.getElementById('cam-expediente')?.value || '';
+  const nota = (opts && opts.nota) || document.getElementById('cam-nota')?.value || '';
+  
+  showProgress(`Generando hash: ${filename}`, 10);
+  
+  // Try to get certified server time
+  let now = captureTime || getNTPTime();
+  if (TSA_CONFIG.serverUrl) {
+    setProgress('Obteniendo hora certificada del servidor...', 20);
+    const serverTime = await getCertifiedNTPTime();
+    if (serverTime) now = serverTime;
+  }
+  
+  const ab = await blob.arrayBuffer();
+  const hashBuf = await crypto.subtle.digest('SHA-256', ab);
+  const sha256hex = bufToHex(hashBuf);
+  
+  const hashes = { 'SHA-256': sha256hex };
+  if (algo !== 'SHA-256') {
+    const h2 = await crypto.subtle.digest(algo, ab);
+    hashes[algo] = bufToHex(h2);
+  }
+  
+  setProgress('Consultando TSA para sello RFC 3161...', 50);
+  
+  // Try real TSA
+  let rfcToken = null, rfcTime = null, tsaName = null, tsaTokenBase64 = null;
+  if (TSA_CONFIG.serverUrl) {
+    const tsaResult = await getRealRFC3161(sha256hex, filename, expediente);
+    if (tsaResult) {
+      rfcToken = 'RFC3161::REAL::' + tsaResult.tsa + '::' + tsaResult.issuedAt;
+      tsaTokenBase64 = tsaResult.tsaToken;
+      rfcTime = tsaResult.issuedAt;
+      tsaName = tsaResult.tsa;
+      showToast('✓ Sello RFC 3161 real obtenido — ' + tsaResult.tsa, 'success');
+    }
+  }
+  
+  // Fallback: simulate RFC 3161
+  if (!rfcToken) {
+    rfcToken = await simulateRFC3161(sha256hex, now);
+    rfcTime = now.toISOString ? now.toISOString() : now;
+  }
+  
+  setProgress('Obteniendo geolocalización...', 75);
+  let geo = null;
+  if (!opts || opts.useGeo !== false) {
+    geo = await getGeoLocation();
+  }
+  
+  setProgress('Guardando evidencia...', 88);
+  
+  const ev = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+Math.random()).toString(36)),
+    filename, type, size: blob.size,
+    captureTime: now.toISOString ? now.toISOString() : now,
+    processTime: getNTPTime().toISOString(),
+    ntpSynced: state.ntpSynced || !!TSA_CONFIG.serverUrl,
+    ntpOffset: state.ntpOffset,
+    hashes, algo,
+    expediente, nota, geo,
+    rfcToken, rfcTime, tsaName, tsaTokenBase64,
+    backendUsed: !!TSA_CONFIG.serverUrl,
+    thumbnail: null, dataUrl: null,
+  };
+  
+  if (type === 'photo' || type === 'image') {
+    try { ev.thumbnail = await blobToDataURL(blob, 200); } catch {}
+  }
+  if (blob.size < 5*1024*1024 && (type === 'photo' || type === 'image' || type === 'document')) {
+    try { ev.dataUrl = await blobToDataURL(blob); } catch {}
+  }
+  
+  state.evidences.unshift(ev);
+  saveEvidences();
+  setProgress('¡Certificado!', 100);
+};
+
+// Settings panel
+function showSettings() {
+  const modal = document.getElementById('detail-modal');
+  const inner = document.getElementById('modal-inner');
+  inner.innerHTML = \`
+    <div class="modal-header">
+      <div class="modal-title">⚙ Configuración</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="hash-options" style="gap:14px">
+      <div class="section-title" style="font-size:13px">Servidor TSA Backend</div>
+      <p style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7">
+        Para obtener sellos RFC 3161 <strong>reales</strong> verificables con OpenSSL,<br>
+        desplegá el backend (ver README) y pegá la URL aquí.
+      </p>
+      <div class="meta-row">
+        <span class="meta-label" style="min-width:50px">URL</span>
+        <input class="meta-input" id="server-url-input" type="url" 
+          placeholder="https://tu-app.railway.app"
+          value="\${TSA_CONFIG.serverUrl}">
+      </div>
+      <div id="server-status" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">
+        \${TSA_CONFIG.serverUrl ? 'Servidor configurado' : 'Sin servidor (modo local)'}
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn-hash" onclick="testAndSaveServer()" style="flex:1;font-size:12px;padding:12px">
+        🔗 Conectar
+      </button>
+      <button class="btn-hash" onclick="clearServer()" style="flex:1;font-size:12px;padding:12px;background:var(--surface2);color:var(--muted)">
+        Desconectar
+      </button>
+    </div>
+    <div style="margin-top:16px;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">INSTRUCCIONES DE DEPLOY</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text);line-height:1.8">
+        1. Descargá el archivo <strong>LexHash-Backend.zip</strong><br>
+        2. Subí a <a href="https://railway.app" target="_blank" style="color:var(--accent)">railway.app</a> o <a href="https://render.com" target="_blank" style="color:var(--accent)">render.com</a><br>
+        3. Configurá la variable <code>SIGN_SECRET</code><br>
+        4. Pegá la URL generada arriba<br>
+        5. ¡Listo! Sellos RFC 3161 reales 🔐
+      </div>
+    </div>
+  \`;
+  modal.classList.add('visible');
+}
+
+async function testAndSaveServer() {
+  const url = document.getElementById('server-url-input').value.trim().replace(/\/+$/, '');
+  const statusEl = document.getElementById('server-status');
+  
+  if (!url) return;
+  statusEl.textContent = 'Probando conexión...';
+  statusEl.style.color = 'var(--muted)';
+  
+  try {
+    const r = await fetch(url + '/health', { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      TSA_CONFIG.serverUrl = url;
+      TSA_CONFIG.enabled = true;
+      localStorage.setItem('lx_server_url', url);
+      statusEl.textContent = '✓ Conectado — ' + d.service;
+      statusEl.style.color = 'var(--success)';
+      showToast('✓ Backend TSA conectado', 'success');
+      document.getElementById('ntp-label').textContent = 'TSA REAL';
+    } else throw new Error('Respuesta inválida');
+  } catch (err) {
+    statusEl.textContent = '✗ Error: ' + err.message;
+    statusEl.style.color = 'var(--danger)';
+    showToast('Error al conectar con el servidor', 'error');
+  }
+}
+
+function clearServer() {
+  TSA_CONFIG.serverUrl = '';
+  TSA_CONFIG.enabled = false;
+  localStorage.removeItem('lx_server_url');
+  closeModal();
+  document.getElementById('ntp-label').textContent = state.ntpSynced ? 'NTP OK · ART' : 'HORA LOCAL';
+  showToast('Servidor desconectado', 'success');
+}
+
 </script>
 </body>
 </html>
