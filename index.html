@@ -637,17 +637,17 @@ function fsz(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+'
 
 function ficn(n){
   var e=(n.split('.').pop()||'').toLowerCase();
-  if(['jpg','jpeg','png','gif','webp','heic'].includes(e))return'\u{1F5BC}';
-  if(['mp4','webm','mov','avi'].includes(e))return'\u{1F3AC}';
-  if(['mp3','wav','m4a'].includes(e))return'\u{1F3B5}';
-  if(['pdf','doc','docx','txt'].includes(e))return'\u{1F4C4}';
-  if(['zip','rar'].includes(e))return'\u{1F5DC}';
-  return'\u{1F4CE}';
+  if(['jpg','jpeg','png','gif','webp','heic'].includes(e))return'🖼';
+  if(['mp4','webm','mov','avi'].includes(e))return'🎬';
+  if(['mp3','wav','m4a'].includes(e))return'🎵';
+  if(['pdf','doc','docx','txt'].includes(e))return'📄';
+  if(['zip','rar'].includes(e))return'🗜';
+  return'📎';
 }
 
 function ticn(t){
-  var m={photo:'\u{1F4F7}',video:'\u{1F3AC}',image:'\u{1F5BC}',document:'\u{1F4C4}',audio:'\u{1F3B5}'};
-  return m[t]||'\u{1F4CE}';
+  var m={photo:'📷',video:'🎬',image:'🖼',document:'📄',audio:'🎵'};
+  return m[t]||'📎';
 }
 
 function dtyp(n){
