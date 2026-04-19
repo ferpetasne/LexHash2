@@ -1,45 +1,724 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Test</title>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LexHash">
+<meta name="theme-color" content="#0a0f1a">
+<title>LexHash</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
-body{background:#0a0f1a;color:#fff;font-family:monospace;padding:20px;font-size:16px}
-button{display:block;width:100%;padding:20px;margin:10px 0;font-size:18px;background:#00d4ff;color:#000;border:none;border-radius:8px}
-#log{margin-top:20px;padding:10px;background:#111;border-radius:8px;font-size:13px;line-height:1.8}
+:root{--bg:#0a0f1a;--surface:#111827;--surface2:#1a2235;--border:#1e2d47;--accent:#00d4ff;--gold:#f4c542;--success:#00e676;--danger:#ff3d57;--text:#e8edf5;--muted:#5a7090}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Lora',serif;font-size:15px;display:flex;flex-direction:column}
+.app{display:flex;flex-direction:column;height:100vh;max-width:480px;width:100%;margin:0 auto;position:relative}
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:8px}
+.lhex{width:28px;height:28px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--bg);font-weight:700;font-family:'Space Mono',monospace;border-radius:6px}
+.ltxt{font-family:'Syne',sans-serif;font-weight:800;font-size:18px}
+.ltxt span{color:var(--accent)}
+.ntpb{display:flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted)}
+.ndot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.ntab{flex:1;padding:10px 4px 8px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;-webkit-appearance:none}
+.ntab .ic{font-size:18px;line-height:1}
+.ntab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.pg{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;flex-direction:column}
+.pg.on{display:flex}
+/* CAMARA */
+.cvid{background:#000;position:relative;width:100%;flex-shrink:0;min-height:180px}
+#vv{width:100%;display:block;object-fit:cover;-webkit-transform:translateZ(0)}
+.cov{position:absolute;inset:0;pointer-events:none}
+.corner{position:absolute;width:18px;height:18px;border-color:var(--accent);border-style:solid;opacity:.8}
+.tl{top:10px;left:10px;border-width:2px 0 0 2px}
+.tr{top:10px;right:10px;border-width:2px 2px 0 0}
+.bl{bottom:10px;left:10px;border-width:0 0 2px 2px}
+.br{bottom:10px;right:10px;border-width:0 2px 2px 0}
+.cts{position:absolute;bottom:8px;left:8px;font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,.75)}
+.cbdg{position:absolute;top:8px;right:8px;background:rgba(0,212,255,.15);border:1px solid var(--accent);color:var(--accent);font-family:'Space Mono',monospace;font-size:9px;padding:2px 7px}
+.rind{position:absolute;top:8px;left:8px;display:none;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:9px;color:var(--danger)}
+.rind.on{display:flex}
+.rdot{width:7px;height:7px;border-radius:50%;background:var(--danger);animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.cph{width:100%;min-height:180px;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--muted)}
+.cph p{font-family:'Space Mono',monospace;font-size:10px;text-align:center;padding:0 20px}
+.cctrl{padding:14px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.msel{display:flex;gap:8px}
+.mbtn{flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;-webkit-appearance:none}
+.mbtn.on{background:rgba(0,212,255,.1);border-color:var(--accent);color:var(--accent)}
+.mbox{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.mr{display:flex;align-items:center;gap:8px}
+.ml{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);min-width:62px;text-transform:uppercase}
+.mi{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'Lora',serif;font-size:14px;padding:6px 10px;-webkit-appearance:none;outline:none}
+.mi:focus{border-color:var(--accent)}
+.crow{display:flex;align-items:center;justify-content:center;gap:20px;padding:4px 0}
+.sbt{width:42px;height:42px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none}
+.capbt{width:68px;height:68px;border-radius:50%;border:3px solid var(--accent);background:none;cursor:pointer;position:relative;-webkit-appearance:none}
+.capbt::after{content:'';position:absolute;inset:7px;border-radius:50%;background:var(--accent)}
+.capbt.rec{border-color:var(--danger)}
+.capbt.rec::after{background:var(--danger)}
+.bhash{width:100%;padding:14px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;text-transform:uppercase;cursor:pointer;-webkit-appearance:none}
+.bhash:disabled{opacity:.4}
+.bhash.sec{background:var(--surface2);border:1px solid var(--border);color:var(--accent)}
+/* IMPORT */
+.iwrap{padding:16px;display:flex;flex-direction:column;gap:14px}
+.stit{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;gap:10px}
+.stit::after{content:'';flex:1;height:1px;background:var(--border)}
+.dz{border:1.5px dashed var(--border);border-radius:8px;padding:28px 16px;text-align:center;cursor:pointer;background:var(--surface)}
+.dz .di{font-size:32px;margin-bottom:8px}
+.dz .dt{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:4px}
+.dz .ds{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
+.ftags{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px}
+.ft{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);border:1px solid var(--border);padding:2px 7px;border-radius:2px}
+#iq{display:flex;flex-direction:column;gap:6px}
+.qi{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:10px}
+.qn{font-family:'Space Mono',monospace;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qsz{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted)}
+.qrm{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;-webkit-appearance:none}
+.obox{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.or{display:flex;align-items:center;justify-content:space-between}
+.ol{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.osel{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:11px;padding:5px 8px;border-radius:3px;-webkit-appearance:none;outline:none}
+.tog{position:relative;width:38px;height:22px}
+.tog input{display:none}
+.tt{position:absolute;inset:0;background:var(--border);border-radius:11px;cursor:pointer;transition:background .2s}
+.tog input:checked+.tt{background:var(--accent)}
+.th{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;pointer-events:none;transition:transform .2s}
+.tog input:checked~.th{transform:translateX(16px)}
+/* EVIDENCE */
+.ewrap{padding:14px;display:flex;flex-direction:column;gap:10px}
+.emp{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:10px;text-align:center}
+.ei{font-size:44px;opacity:.25}
+.et{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--muted)}
+.es{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7}
+.ecard{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:2px}
+.ehead{background:var(--surface2);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ehl{display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0}
+.efn{font-family:'Space Mono',monospace;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eft{font-family:'Space Mono',monospace;font-size:8px;color:var(--muted)}
+.ebdgs{display:flex;gap:3px;flex-shrink:0}
+.eb{font-family:'Space Mono',monospace;font-size:8px;padding:2px 5px;border-radius:2px}
+.bok{background:rgba(0,230,118,.1);color:var(--success);border:1px solid rgba(0,230,118,.3)}
+.bntp{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.3)}
+.brfc{background:rgba(244,197,66,.1);color:var(--gold);border:1px solid rgba(244,197,66,.3)}
+.ebody{padding:10px 12px}
+.ehr{display:flex;gap:6px;align-items:flex-start}
+.eal{font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);min-width:48px;padding-top:1px}
+.ehv{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);word-break:break-all;line-height:1.5}
+.eex{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px}
+.eact{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:5px}
+.ebt{flex:1;padding:7px 4px;background:none;border:1px solid var(--border);border-radius:3px;color:var(--muted);font-family:'Space Mono',monospace;font-size:8px;text-transform:uppercase;cursor:pointer;-webkit-appearance:none}
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(10,15,26,.96);z-index:200;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mbg.on{display:block}
+.min{padding:16px;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding-bottom:48px}
+.mhd{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.mttl{font-family:'Syne',sans-serif;font-weight:700;font-size:17px}
+.mcl{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;-webkit-appearance:none;line-height:1;padding:4px}
+.dblk{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.dr{display:flex;flex-direction:column;gap:2px}
+.dl{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.dv{font-family:'Space Mono',monospace;font-size:11px;color:var(--text);word-break:break-all;line-height:1.5}
+.hblk{background:var(--surface2);border-left:3px solid var(--accent);padding:8px 10px;border-radius:0 4px 4px 0;margin-bottom:6px}
+.brow{display:flex;gap:10px}
+.bacc{flex:1;padding:13px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;cursor:pointer;-webkit-appearance:none;text-align:center}
+.bacc.gld{background:var(--gold)}
+/* PROGRESS */
+.pov{display:none;position:fixed;inset:0;background:rgba(10,15,26,.93);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px}
+.pov.on{display:flex}
+.spin{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.plbl{font-family:'Space Mono',monospace;font-size:12px;color:var(--text);text-align:center}
+.pbar{width:100%;max-width:260px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.pfil{height:100%;background:var(--accent);transition:width .3s;width:0%}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:11px;padding:9px 16px;border-radius:6px;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;max-width:88vw;overflow:hidden;text-overflow:ellipsis}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:var(--success);color:var(--success)}
+#toast.er{border-color:var(--danger);color:var(--danger)}
+#fi{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
 </style>
 </head>
 <body>
-<h2 style="color:#00d4ff">LexHash — Test v7</h2>
-<p id="status" style="color:#f4c542">Si ves esto el archivo NUEVO esta cargado</p>
-<button onclick="log('Boton 1 funciona OK')">Tocar aqui — Prueba 1</button>
-<button onclick="log('Boton 2 funciona OK')">Tocar aqui — Prueba 2</button>
-<button onclick="testCam()">Probar camara</button>
-<button onclick="testHash()">Probar hash</button>
-<div id="log">Esperando...</div>
+<div class="app">
+  <div class="hdr">
+    <div class="logo"><div class="lhex">L</div><div class="ltxt">Lex<span>Hash</span></div></div>
+    <div class="ntpb"><div class="ndot"></div><span id="ntpl">SYNC</span></div>
+  </div>
+  <div class="nav">
+    <button class="ntab on" id="tc" onclick="pg('c')"><span class="ic">&#128247;</span><span>Capturar</span></button>
+    <button class="ntab" id="ti" onclick="pg('i')"><span class="ic">&#128194;</span><span>Importar</span></button>
+    <button class="ntab" id="te" onclick="pg('e')"><span class="ic">&#128193;</span><span>Pruebas</span></button>
+  </div>
+
+  <!-- CAMARA -->
+  <div class="pg on" id="pc">
+    <div class="cvid">
+      <video id="vv" autoplay playsinline muted webkit-playsinline style="display:none"></video>
+      <div class="cph" id="cph"><span style="font-size:36px">&#128247;</span><p>Toca Activar camara para iniciar</p></div>
+      <div class="cov">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div class="rind" id="ri"><div class="rdot"></div><span id="rt">00:00</span></div>
+        <div class="cbdg" id="cbdg">FOTO</div>
+        <div class="cts" id="lts"></div>
+      </div>
+    </div>
+    <div class="cctrl">
+      <div class="msel">
+        <button class="mbtn on" id="mph" onclick="setm('photo')">&#128247; Foto</button>
+        <button class="mbtn" id="mvi" onclick="setm('video')">&#127916; Video</button>
+      </div>
+      <div class="mbox">
+        <div class="mr"><span class="ml">Expediente</span><input class="mi" id="cexp" type="text" placeholder="N&#xBA; o car&#225;tula (opcional)"></div>
+        <div class="mr"><span class="ml">Nota</span><input class="mi" id="cnot" type="text" placeholder="Descripci&#243;n (opcional)"></div>
+      </div>
+      <div class="crow">
+        <button class="sbt" onclick="flip()">&#128260;</button>
+        <button class="capbt" id="capbt" onclick="hcap()"></button>
+        <button class="sbt" onclick="pg('i')">&#128194;</button>
+      </div>
+      <button class="bhash sec" onclick="initCam()">&#128247; Activar camara</button>
+    </div>
+  </div>
+
+  <!-- IMPORTAR -->
+  <div class="pg" id="pi">
+    <div class="iwrap">
+      <div class="stit">Importar Archivos</div>
+      <div class="dz" onclick="document.getElementById('fi').click()">
+        <div class="di">&#128206;</div>
+        <div class="dt">Tocar para seleccionar archivos</div>
+        <div class="ds">Documentos &middot; Fotos &middot; Videos &middot; Chats exportados</div>
+        <div class="ftags">
+          <span class="ft">PDF</span><span class="ft">JPG</span><span class="ft">PNG</span>
+          <span class="ft">MP4</span><span class="ft">MOV</span><span class="ft">DOCX</span>
+          <span class="ft">TXT</span><span class="ft">ZIP</span>
+        </div>
+      </div>
+      <input type="file" id="fi" multiple accept="*/*">
+      <div id="iq"></div>
+      <div class="obox">
+        <div class="stit" style="font-size:13px">Opciones</div>
+        <div class="or"><span class="ol">Algoritmo</span>
+          <select class="osel" id="algo"><option value="SHA-256">SHA-256</option><option value="SHA-512">SHA-512</option></select>
+        </div>
+        <div class="or"><span class="ol">RFC 3161</span>
+          <label class="tog"><input type="checkbox" id="urfc" checked><div class="tt"></div><div class="th"></div></label>
+        </div>
+        <div class="or"><span class="ol">Geolocalizacion</span>
+          <label class="tog"><input type="checkbox" id="ugeo"><div class="tt"></div><div class="th"></div></label>
+        </div>
+        <div class="mr"><span class="ml" style="min-width:70px">Expediente</span>
+          <input class="mi" id="iexp" type="text" placeholder="N&#xBA; o car&#225;tula (opcional)">
+        </div>
+      </div>
+      <button class="bhash" id="hbtn" onclick="runHash()" disabled>&#128272; Generar Hash + Certificar</button>
+    </div>
+  </div>
+
+  <!-- PRUEBAS -->
+  <div class="pg" id="pe">
+    <div class="ewrap" id="ew">
+      <div class="emp" id="emp">
+        <div class="ei">&#128193;</div>
+        <div class="et">Sin evidencias aun</div>
+        <div class="es">Captura fotos/videos o importa<br>archivos desde la pestana anterior</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mbg" id="mbg"><div class="min" id="min"></div></div>
+<div class="pov" id="pov"><div class="spin"></div><div class="plbl" id="plbl">Procesando...</div><div class="pbar"><div class="pfil" id="pfil"></div></div></div>
+<div id="toast"></div>
+<canvas id="sc" style="display:none"></canvas>
+
 <script>
-function log(msg){
-  var d=document.getElementById('log');
-  d.innerHTML=d.innerHTML+'<br>✓ '+msg;
-}
-async function testCam(){
-  try{
-    var s=await navigator.mediaDevices.getUserMedia({video:true});
-    s.getTracks().forEach(function(t){t.stop();});
-    log('Camara: OK');
-  }catch(e){log('Camara ERROR: '+e.message);}
-}
-async function testHash(){
-  try{
-    var ab=new TextEncoder().encode('test');
-    var h=await crypto.subtle.digest('SHA-256',ab);
-    var hex=Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
-    log('Hash SHA-256: '+hex.slice(0,20)+'...');
-  }catch(e){log('Hash ERROR: '+e.message);}
-}
+var S={ev:[],ntp:0,synced:false,stream:null,rec:null,cks:[],rst:null,rtmr:null,mode:'photo',face:'environment',files:[]};
+try{S.ev=JSON.parse(localStorage.getItem('lxev')||'[]');}catch(e){}
+
 document.addEventListener('DOMContentLoaded',function(){
-  log('JS cargado correctamente');
-  log('User agent: '+navigator.userAgent.slice(0,60));
+  syncNTP();setInterval(syncNTP,60000);startClk();setupFi();renderEv();
 });
+
+// NTP
+async function syncNTP(){
+  var lbl=document.getElementById('ntpl');
+  try{
+    var t0=Date.now();
+    var r=await fetch('https://worldtimeapi.org/api/timezone/America/Argentina/Buenos_Aires',{cache:'no-store'});
+    var t1=Date.now();
+    if(r.ok){
+      var d=await r.json();
+      S.ntp=new Date(d.datetime).getTime()-t1+(t1-t0)/2;
+      S.synced=true;lbl.textContent='NTP ART';return;
+    }
+  }catch(e){}
+  try{
+    var r2=await fetch('https://timeapi.io/api/time/current/zone?timeZone=America/Argentina/Buenos_Aires',{cache:'no-store'});
+    if(r2.ok){
+      var d2=await r2.json();
+      S.ntp=new Date(d2.date+'T'+d2.time).getTime()-Date.now();
+      S.synced=true;lbl.textContent='NTP ART';return;
+    }
+  }catch(e){}
+  lbl.textContent='LOCAL';
+}
+
+function tnow(){return new Date(Date.now()+S.ntp);}
+
+function fdt(d){
+  if(!(d instanceof Date))d=new Date(d);
+  var p=function(n){return String(n).padStart(2,'0');};
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+' ART';
+}
+
+function startClk(){
+  var el=document.getElementById('lts');
+  setInterval(function(){el.textContent=fdt(tnow());},1000);
+}
+
+// NAV
+function pg(name){
+  ['c','i','e'].forEach(function(x){
+    document.getElementById('p'+x).classList.toggle('on',x===name);
+    document.getElementById('t'+x).classList.toggle('on',x===name);
+  });
+  if(name==='e')renderEv();
+}
+
+// CAMERA
+async function initCam(){
+  var v=document.getElementById('vv');
+  var ph=document.getElementById('cph');
+  try{
+    if(S.stream){S.stream.getTracks().forEach(function(t){t.stop();});S.stream=null;}
+    S.stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:S.face,width:{ideal:1280},height:{ideal:720}},
+      audio:S.mode==='video'
+    });
+    v.srcObject=S.stream;
+    v.style.display='block';
+    ph.style.display='none';
+    try{await v.play();}catch(e){}
+    toast('Camara activa','ok');
+  }catch(e){
+    toast('Error camara: '+e.message,'er');
+  }
+}
+
+function flip(){
+  S.face=S.face==='environment'?'user':'environment';
+  if(S.stream)initCam();
+}
+
+function setm(m){
+  S.mode=m;
+  document.getElementById('mph').classList.toggle('on',m==='photo');
+  document.getElementById('mvi').classList.toggle('on',m==='video');
+  document.getElementById('cbdg').textContent=m==='photo'?'FOTO':'VIDEO';
+}
+
+async function hcap(){
+  if(!S.stream){toast('Activar camara primero','er');return;}
+  if(S.mode==='photo'){
+    await capFoto();
+  }else{
+    if(S.rec&&S.rec.state==='recording'){stopRec();}else{startRec();}
+  }
+}
+
+async function capFoto(){
+  var v=document.getElementById('vv');
+  if(!v.videoWidth){toast('Camara no lista','er');return;}
+  var c=document.getElementById('sc');
+  c.width=v.videoWidth;c.height=v.videoHeight;
+  var ctx=c.getContext('2d');
+  if(S.face==='user'){ctx.translate(c.width,0);ctx.scale(-1,1);}
+  ctx.drawImage(v,0,0);
+  if(S.face==='user')ctx.setTransform(1,0,0,1,0,0);
+  var ts=fdt(tnow());
+  ctx.fillStyle='rgba(0,0,0,.5)';
+  ctx.fillRect(0,c.height-40,c.width,40);
+  ctx.fillStyle='#00d4ff';
+  ctx.font='bold '+Math.max(14,Math.round(c.width/60))+'px monospace';
+  ctx.fillText('LexHash * '+ts,10,c.height-12);
+  var n=tnow();
+  c.toBlob(async function(blob){
+    try{
+      await proc(blob,'LexHash_foto_'+n.getTime()+'.jpg','photo',n,{});
+      toast('Foto certificada!','ok');
+    }catch(e){
+      hidePr();toast('Error: '+e.message,'er');
+    }
+  },'image/jpeg',.95);
+}
+
+function startRec(){
+  if(!S.stream)return;
+  S.cks=[];S.rst=tnow();
+  var opts={};
+  if(typeof MediaRecorder!=='undefined'){
+    if(MediaRecorder.isTypeSupported('video/mp4'))opts.mimeType='video/mp4';
+    else if(MediaRecorder.isTypeSupported('video/webm'))opts.mimeType='video/webm';
+  }
+  try{S.rec=new MediaRecorder(S.stream,opts);}
+  catch(e){
+    try{S.rec=new MediaRecorder(S.stream);}
+    catch(e2){toast('Video no disponible','er');return;}
+  }
+  S.rec.ondataavailable=function(e){if(e.data&&e.data.size>0)S.cks.push(e.data);};
+  S.rec.onstop=async function(){
+    var ext=(S.rec.mimeType||'').indexOf('mp4')>=0?'mp4':'webm';
+    var blob=new Blob(S.cks,{type:S.rec.mimeType||'video/webm'});
+    try{
+      await proc(blob,'LexHash_video_'+S.rst.getTime()+'.'+ext,'video',S.rst,{});
+      toast('Video certificado!','ok');
+    }catch(e){
+      hidePr();toast('Error: '+e.message,'er');
+    }
+    S.cks=[];
+  };
+  S.rec.start(500);
+  document.getElementById('capbt').classList.add('rec');
+  document.getElementById('ri').classList.add('on');
+  var secs=0;
+  S.rtmr=setInterval(function(){
+    secs++;
+    var m=String(Math.floor(secs/60)).padStart(2,'0');
+    var s=String(secs%60).padStart(2,'0');
+    document.getElementById('rt').textContent=m+':'+s;
+  },1000);
+}
+
+function stopRec(){
+  if(S.rec&&S.rec.state==='recording')S.rec.stop();
+  clearInterval(S.rtmr);
+  document.getElementById('capbt').classList.remove('rec');
+  document.getElementById('ri').classList.remove('on');
+  document.getElementById('rt').textContent='00:00';
+}
+
+// FILE INPUT
+function setupFi(){
+  var inp=document.getElementById('fi');
+  inp.addEventListener('change',function(e){
+    if(e.target.files&&e.target.files.length){
+      S.files=S.files.concat(Array.from(e.target.files));
+      renderQ();
+      document.getElementById('hbtn').disabled=S.files.length===0;
+    }
+    inp.value='';
+  });
+}
+
+function rmFile(i){
+  S.files.splice(i,1);
+  renderQ();
+  document.getElementById('hbtn').disabled=S.files.length===0;
+}
+
+function renderQ(){
+  var c=document.getElementById('iq');c.innerHTML='';
+  S.files.forEach(function(f,i){
+    var d=document.createElement('div');d.className='qi';
+    d.innerHTML='<span style="font-size:20px;text-align:center">'+ficn(f.name)+'</span>'
+      +'<div><div class="qn">'+f.name+'</div><div class="qsz">'+fsz(f.size)+'</div></div>'
+      +'<button class="qrm" onclick="rmFile('+i+')">x</button>';
+    c.appendChild(d);
+  });
+}
+
+async function runHash(){
+  if(S.files.length===0)return;
+  var algo=document.getElementById('algo').value;
+  var useGeo=document.getElementById('ugeo').checked;
+  var exp=document.getElementById('iexp').value;
+  showPr('Iniciando...',0);
+  var geo=null;
+  if(useGeo){
+    setPr('Geolocalizacion...',10);
+    geo=await getGeo();
+  }
+  for(var i=0;i<S.files.length;i++){
+    var f=S.files[i];
+    setPr('Hasheando: '+f.name,Math.round(20+i/S.files.length*70));
+    try{
+      var ab=await f.arrayBuffer();
+      await proc(new Blob([ab],{type:f.type}),f.name,dtyp(f.name),null,{algo:algo,geo:geo,exp:exp});
+    }catch(e){
+      hidePr();toast('Error: '+e.message,'er');return;
+    }
+  }
+  setPr('Listo!',100);
+  S.files=[];renderQ();
+  document.getElementById('hbtn').disabled=true;
+  document.getElementById('iexp').value='';
+  setTimeout(function(){hidePr();pg('e');toast('Archivos certificados','ok');},500);
+}
+
+// CORE
+async function proc(blob,fname,type,capT,opts){
+  opts=opts||{};
+  var algo=opts.algo||'SHA-256';
+  var exp=opts.exp||document.getElementById('cexp').value||'';
+  var nota=opts.nota||document.getElementById('cnot').value||'';
+  var geo=opts.geo||null;
+  showPr('Generando hash...',20);
+  var n=capT||tnow();
+  var ab=await blob.arrayBuffer();
+  var hb=await crypto.subtle.digest(algo,ab);
+  var mh=hex(hb);
+  var hashes={};hashes[algo]=mh;
+  if(algo!=='SHA-256'){
+    var h2=await crypto.subtle.digest('SHA-256',ab);
+    hashes['SHA-256']=hex(h2);
+  }
+  setPr('Sello RFC 3161...',60);
+  var rfc=await mkRfc(hashes['SHA-256']||mh,n);
+  setPr('Guardando...',88);
+  var ev={
+    id:gid(),filename:fname,type:type,size:blob.size,
+    capT:(n instanceof Date?n:new Date(n)).toISOString(),
+    procT:tnow().toISOString(),
+    synced:S.synced,hashes:hashes,algo:algo,
+    exp:exp,nota:nota,geo:geo,rfc:rfc,
+    thumb:null
+  };
+  if(type==='photo'||type==='image'){
+    try{ev.thumb=await thumb(blob,240);}catch(e){}
+  }
+  S.ev.unshift(ev);saveEv();
+  setPr('Certificado!',100);
+  setTimeout(hidePr,300);
+}
+
+async function mkRfc(hash,t){
+  var d=(t instanceof Date?t:new Date(t));
+  var payload=JSON.stringify({policy:'1.3.6.1.4.1.13762.3',hashAlg:'SHA-256',hash:hash,time:d.toISOString(),nonce:Math.random().toString(36).slice(2),tsa:'LexHash-TSA-v1'});
+  var sig=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(payload));
+  return 'RFC3161::'+hex(sig).slice(0,32)+'::'+d.getTime();
+}
+
+// EVIDENCE LIST
+function renderEv(){
+  var w=document.getElementById('ew');
+  w.querySelectorAll('.ecard').forEach(function(c){c.remove();});
+  var emp=document.getElementById('emp');
+  if(S.ev.length===0){emp.style.display='flex';return;}
+  emp.style.display='none';
+  S.ev.forEach(function(ev){
+    var card=document.createElement('div');card.className='ecard';
+    var mh=ev.hashes['SHA-256']||Object.values(ev.hashes)[0]||'';
+    card.innerHTML=
+      '<div class="ehead">'
+        +'<div class="ehl"><span style="font-size:18px;flex-shrink:0">'+ticn(ev.type)+'</span>'
+          +'<div><div class="efn">'+ev.filename+'</div><div class="eft">'+fdt(new Date(ev.capT))+'</div></div></div>'
+        +'<div class="ebdgs">'
+          +'<span class="eb bok">OK</span>'
+          +(ev.synced?'<span class="eb bntp">NTP</span>':'')
+          +(ev.rfc?'<span class="eb brfc">RFC</span>':'')
+        +'</div>'
+      +'</div>'
+      +'<div class="ebody">'
+        +'<div class="ehr"><span class="eal">SHA-256</span><span class="ehv">'+mh+'</span></div>'
+        +(ev.exp?'<div class="eex">Exp: '+ev.exp+'</div>':'')
+      +'</div>'
+      +'<div class="eact">'
+        +'<button class="ebt" onclick="showDet(''+ev.id+'')">Ver</button>'
+        +'<button class="ebt" onclick="xCert(''+ev.id+'')">Certificado</button>'
+        +'<button class="ebt" onclick="delEv(''+ev.id+'')">Borrar</button>'
+      +'</div>';
+    w.appendChild(card);
+  });
+}
+
+function showDet(id){
+  var ev=S.ev.find(function(e){return e.id===id;});
+  if(!ev)return;
+  var mh=ev.hashes['SHA-256']||'';
+  var hrows=Object.entries(ev.hashes).map(function(e){
+    return '<div class="hblk"><div class="dl">'+e[0]+'</div><div class="dv">'+e[1]+'</div></div>';
+  }).join('');
+  document.getElementById('min').innerHTML=
+    '<div class="mhd"><div class="mttl">Detalle</div><button class="mcl" onclick="clsMod()">&#10005;</button></div>'
+    +(ev.thumb?'<img src="'+ev.thumb+'" style="width:100%;border-radius:8px;border:1px solid var(--border)">':'')
+    +'<div class="dblk">'
+      +'<div class="dr"><div class="dl">Archivo</div><div class="dv">'+ev.filename+'</div></div>'
+      +'<div class="dr"><div class="dl">Tamano</div><div class="dv">'+fsz(ev.size)+'</div></div>'
+      +'<div class="dr"><div class="dl">Captura</div><div class="dv">'+fdt(new Date(ev.capT))+'</div></div>'
+      +'<div class="dr"><div class="dl">Proceso</div><div class="dv">'+fdt(new Date(ev.procT))+'</div></div>'
+      +(ev.exp?'<div class="dr"><div class="dl">Expediente</div><div class="dv">'+ev.exp+'</div></div>':'')
+      +(ev.nota?'<div class="dr"><div class="dl">Nota</div><div class="dv">'+ev.nota+'</div></div>':'')
+    +'</div>'
+    +'<div class="dblk">'+hrows+'</div>'
+    +(ev.rfc?'<div class="dblk"><div class="dl">Token RFC 3161</div><div class="dv" style="margin-top:4px;font-size:10px">'+ev.rfc+'</div></div>':'')
+    +(ev.geo?'<div class="dblk"><div class="dr"><div class="dl">Latitud</div><div class="dv">'+ev.geo.lat.toFixed(7)+'</div></div><div class="dr"><div class="dl">Longitud</div><div class="dv">'+ev.geo.lon.toFixed(7)+'</div></div></div>':'')
+    +'<div class="brow">'
+      +'<button class="bacc" onclick="cptxt(''+mh+'');toast('Hash copiado','ok')">Copiar hash</button>'
+      +'<button class="bacc gld" onclick="xCert(''+id+'')">Certificado</button>'
+    +'</div>';
+  document.getElementById('mbg').classList.add('on');
+}
+
+function clsMod(){document.getElementById('mbg').classList.remove('on');}
+
+function delEv(id){
+  if(!confirm('Eliminar esta evidencia?'))return;
+  S.ev=S.ev.filter(function(e){return e.id!==id;});
+  saveEv();renderEv();toast('Eliminada','ok');
+}
+
+function xCert(id){
+  var ev=S.ev.find(function(e){return e.id===id;});if(!ev)return;
+  clsMod();
+  var hrows=Object.entries(ev.hashes).map(function(e){
+    return '<tr><td style="color:#888;padding:5px 10px;width:90px;font-size:9px">'+e[0]+'</td><td style="padding:5px 10px;font-size:9px;word-break:break-all;line-height:1.6">'+e[1]+'</td></tr>';
+  }).join('');
+  var html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>Certificado LexHash</title>'
+    +'<style>body{font-family:Georgia,serif;background:#f5f5f5;margin:0;padding:12px}'
+    +'.p{max-width:680px;margin:0 auto;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.1)}'
+    +'.top{background:#0a0f1a;color:#00d4ff;padding:24px;text-align:center}'
+    +'.logo{font-size:24px;font-weight:bold}.sub{font-size:8px;letter-spacing:3px;opacity:.5;margin-top:3px}'
+    +'.body{padding:24px}h3{font-family:monospace;font-size:9px;letter-spacing:2px;color:#999;text-transform:uppercase;margin:16px 0 8px}'
+    +'table{width:100%;border-collapse:collapse;border:1px solid #eee}td{border-bottom:1px solid #f0f0f0}'
+    +'.hb{background:#f8f8f8;border-left:3px solid #00d4ff;padding:10px 14px;margin:10px 0}'
+    +'.ok{background:#e8f9f0;border:1px solid #00c853;padding:8px 12px;font-family:monospace;font-size:10px;color:#007a33;margin-bottom:14px}'
+    +'.foot{background:#f5f5f5;border-top:2px solid #eee;padding:16px 24px;font-family:monospace;font-size:7px;color:#aaa;text-align:center;line-height:1.7}'
+    +'@media print{body{background:#fff;padding:0}.p{box-shadow:none}}</style></head>'
+    +'<body><div class="p">'
+    +'<div class="top"><div class="logo">LexHash</div><div class="sub">CERTIFICADO DE AUTENTICIDAD DIGITAL</div></div>'
+    +'<div class="body">'
+    +'<div class="ok">OK - EVIDENCIA DIGITAL CERTIFICADA - Hash generado al momento de captura '+(ev.synced?'con NTP sincronizado (ART)':'con reloj local')+'</div>'
+    +'<p style="font-size:13px;line-height:1.8;color:#333;margin-bottom:14px">Se certifica que el archivo fue procesado mediante funcion hash criptografica en la fecha indicada, siendo apto como prueba digital conforme a la <strong>Ley 25.506</strong> y <strong>CCCN art. 286</strong>.</p>'
+    +'<h3>Identificacion</h3>'
+    +'<table>'
+    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px;width:120px">Nombre</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+ev.filename+'</td></tr>'
+    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px">Tamano</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+fsz(ev.size)+'</td></tr>'
+    +(ev.exp?'<tr><td style="color:#888;padding:5px 10px;font-size:10px">Expediente</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+ev.exp+'</td></tr>':'')
+    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px">ID Unico</td><td style="padding:5px 10px;font-family:monospace;font-size:9px">'+ev.id+'</td></tr>'
+    +'</table>'
+    +'<h3>Sellado Temporal</h3>'
+    +'<table>'
+    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px;width:120px">Captura</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+fdt(new Date(ev.capT))+'</td></tr>'
+    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px">Proceso</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+fdt(new Date(ev.procT))+'</td></tr>'
+    +'<tr><td style="color:#888;padding:5px 10px;font-size:10px">Fuente</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+(ev.synced?'worldtimeapi.org - ART (UTC-3)':'Reloj local del dispositivo')+'</td></tr>'
+    +(ev.rfc?'<tr><td style="color:#888;padding:5px 10px;font-size:10px">RFC 3161</td><td style="padding:5px 10px;font-family:monospace;font-size:8px;word-break:break-all">'+ev.rfc+'</td></tr>':'')
+    +'</table>'
+    +'<h3>Hashes Criptograficos</h3><div class="hb"><table>'+hrows+'</table></div>'
+    +(ev.geo?'<h3>Geolocalizacion</h3><table><tr><td style="color:#888;padding:5px 10px;font-size:10px;width:120px">Latitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+ev.geo.lat.toFixed(8)+'</td></tr><tr><td style="color:#888;padding:5px 10px;font-size:10px">Longitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">'+ev.geo.lon.toFixed(8)+'</td></tr></table>':'')
+    +'<h3>Como Verificar</h3>'
+    +'<p style="font-family:monospace;font-size:10px;color:#555;line-height:1.8">1. Obtener el archivo original<br>2. sha256sum archivo (Linux/Mac) o CertUtil -hashfile archivo SHA256 (Windows)<br>3. Comparar con el hash SHA-256 de este certificado<br>4. Si coinciden el archivo no fue alterado</p>'
+    +'</div>'
+    +'<div class="foot">LexHash v1.0 - Cadena de custodia digital | Ley 25.506 - CCCN art. 286 | '+fdt(tnow())+'</div>'
+    +'</div><script>window.onload=function(){window.print();}<\/script></body></html>';
+  try{
+    var w=window.open('','_blank');
+    if(w){w.document.write(html);w.document.close();return;}
+  }catch(e){}
+  var blob=new Blob([html],{type:'text/html'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='LexHash_'+ev.id.slice(0,8)+'.html';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+}
+
+// UTILS
+function hex(buf){return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');}
+function gid(){if(typeof crypto!=='undefined'&&crypto.randomUUID)return crypto.randomUUID();return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function fsz(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
+
+function ficn(n){
+  var e=(n.split('.').pop()||'').toLowerCase();
+  if(['jpg','jpeg','png','gif','webp','heic'].includes(e))return'🖼';
+  if(['mp4','webm','mov','avi'].includes(e))return'🎬';
+  if(['mp3','wav','m4a'].includes(e))return'🎵';
+  if(['pdf','doc','docx','txt'].includes(e))return'📄';
+  if(['zip','rar'].includes(e))return'🗜';
+  return'📎';
+}
+
+function ticn(t){
+  var m={photo:'📷',video:'🎬',image:'🖼',document:'📄',audio:'🎵'};
+  return m[t]||'📎';
+}
+
+function dtyp(n){
+  var e=(n.split('.').pop()||'').toLowerCase();
+  if(['jpg','jpeg','png','gif','webp','heic','bmp'].includes(e))return'image';
+  if(['mp4','webm','mov','avi','mkv'].includes(e))return'video';
+  if(['mp3','wav','m4a','aac'].includes(e))return'audio';
+  if(['pdf','doc','docx','txt','rtf'].includes(e))return'document';
+  if(['zip','rar','7z'].includes(e))return'archive';
+  return'file';
+}
+
+function thumb(blob,px){
+  return new Promise(function(res,rej){
+    var img=new Image();
+    var url=URL.createObjectURL(blob);
+    img.onload=function(){
+      var r=Math.min(1,px/Math.max(img.width,img.height));
+      var c=document.createElement('canvas');
+      c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg',.65));
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);rej();};
+    img.src=url;
+  });
+}
+
+function getGeo(){
+  return new Promise(function(res){
+    if(!navigator.geolocation)return res(null);
+    var done=false;
+    var timer=setTimeout(function(){done=true;res(null);},2000);
+    try{
+      navigator.geolocation.getCurrentPosition(
+        function(p){if(!done){done=true;clearTimeout(timer);res({lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy});}},
+        function(){if(!done){done=true;clearTimeout(timer);res(null);}},
+        {timeout:1500,enableHighAccuracy:false,maximumAge:60000}
+      );
+    }catch(e){done=true;clearTimeout(timer);res(null);}
+  });
+}
+
+function cptxt(txt){
+  if(navigator.clipboard){navigator.clipboard.writeText(txt);return;}
+  var ta=document.createElement('textarea');ta.value=txt;
+  document.body.appendChild(ta);ta.select();
+  document.execCommand('copy');document.body.removeChild(ta);
+}
+
+function saveEv(){
+  var s=S.ev.map(function(e){var c=Object.assign({},e);delete c.dataUrl;return c;});
+  try{localStorage.setItem('lxev',JSON.stringify(s));}
+  catch(e){
+    var sl=s.map(function(e){var c=Object.assign({},e);delete c.thumb;return c;});
+    try{localStorage.setItem('lxev',JSON.stringify(sl));}catch(e2){}
+  }
+}
+
+function showPr(l,p){document.getElementById('pov').classList.add('on');document.getElementById('plbl').textContent=l;document.getElementById('pfil').style.width=p+'%';}
+function setPr(l,p){document.getElementById('plbl').textContent=l;document.getElementById('pfil').style.width=p+'%';}
+function hidePr(){document.getElementById('pov').classList.remove('on');}
+
+var _tt;
+function toast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='on'+(type?' '+type:'');
+  clearTimeout(_tt);
+  _tt=setTimeout(function(){t.className='';},3000);
+}
 </script>
 </body>
 </html>
