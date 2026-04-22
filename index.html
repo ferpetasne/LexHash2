@@ -175,6 +175,18 @@ canvas { display: none; }
     <input type="text" id="cam-nota" placeholder="Descripci&#243;n (opcional)">
   </div>
 
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:10px 12px;background:#111827;border:1px solid #1e2d47;border-radius:8px">
+    <div>
+      <div style="font-size:11px;color:#e8edf5;font-weight:600">Geolocalizar</div>
+      <div style="font-size:10px;color:#5a7090;margin-top:2px">GPS o antenas celulares</div>
+    </div>
+    <label class="tog-wrap">
+      <input type="checkbox" id="cam-geo">
+      <div class="tog-track"></div>
+      <div class="tog-thumb"></div>
+    </label>
+  </div>
+
   <div class="capture-row">
     <button class="side-btn" id="btn-flip">&#128260;</button>
     <button class="shutter" id="btn-shutter"></button>
@@ -207,6 +219,14 @@ canvas { display: none; }
       <span class="opt-label">Sello RFC 3161</span>
       <label class="tog-wrap">
         <input type="checkbox" id="opt-rfc" checked>
+        <div class="tog-track"></div>
+        <div class="tog-thumb"></div>
+      </label>
+    </div>
+    <div class="opt-row">
+      <span class="opt-label">Geolocalizar</span>
+      <label class="tog-wrap">
+        <input type="checkbox" id="opt-geo">
         <div class="tog-track"></div>
         <div class="tog-thumb"></div>
       </label>
@@ -266,6 +286,7 @@ var mode = 'photo';
 var facing = 'environment';
 var ntpOffset = 0;
 var ntpSynced = false;
+var lastGeo = null;
 
 try { evidences = JSON.parse(localStorage.getItem('lx_evidences') || '[]'); } catch(e) {}
 
@@ -372,8 +393,13 @@ function capturePhoto() {
   ctx.font = 'bold ' + Math.max(14, Math.round(canvas.width / 60)) + 'px monospace';
   ctx.fillText('LexHash * ' + ts, 10, canvas.height - 14);
   var n = getTime();
-  canvas.toBlob(function(blob) {
-    saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n);
+  canvas.toBlob(async function(blob) {
+    var geo = null;
+    if (document.getElementById('cam-geo').checked) {
+      setProgress('Obteniendo ubicacion...', 10);
+      geo = await getGeoInfo();
+    }
+    saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n, { geo: geo });
   }, 'image/jpeg', 0.95);
 }
 
@@ -453,12 +479,18 @@ document.getElementById('btn-hash').addEventListener('click', async function() {
   if (files.length === 0) return;
   var algo = document.getElementById('opt-algo').value;
   var exp = document.getElementById('imp-exp').value;
+  var useGeo = document.getElementById('opt-geo').checked;
   showProgress('Iniciando...', 0);
+  var geo = null;
+  if (useGeo) {
+    setProgress('Obteniendo ubicacion...', 5);
+    geo = await getGeoInfo();
+  }
   for (var i = 0; i < files.length; i++) {
     setProgress('Hasheando: ' + files[i].name, Math.round(10 + i / files.length * 80));
     try {
       var ab = await files[i].arrayBuffer();
-      await saveEvidence(new Blob([ab], { type: files[i].type }), files[i].name, detectType(files[i].name), null, { algo: algo, exp: exp });
+      await saveEvidence(new Blob([ab], { type: files[i].type }), files[i].name, detectType(files[i].name), null, { algo: algo, exp: exp, geo: geo });
     } catch(e) {
       hideProgress();
       toast('Error: ' + e.message, 'err');
@@ -473,12 +505,65 @@ document.getElementById('btn-hash').addEventListener('click', async function() {
   setTimeout(function() { hideProgress(); showPage('ev'); toast('Certificados OK', 'ok'); }, 600);
 });
 
+// ── GEOLOCALIZACIÓN ──
+function getGeoInfo() {
+  return new Promise(function(resolve) {
+    if (!navigator.geolocation) { resolve(null); return; }
+    var done = false;
+    var timer = setTimeout(function() {
+      if (!done) { done = true; resolve(null); }
+    }, 2000);
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        var acc = pos.coords.accuracy;
+        var method, confidence, nota;
+        if (acc <= 20) {
+          method = 'GPS satelital';
+          confidence = 'ALTA';
+          nota = 'Posicion obtenida por GPS satelital. Precision de ' + Math.round(acc) + ' metros. Independiente de la red celular.';
+        } else if (acc <= 100) {
+          method = 'GPS asistido por red';
+          confidence = 'ALTA';
+          nota = 'Posicion obtenida por GPS corroborado por antenas celulares. Precision de ' + Math.round(acc) + ' metros.';
+        } else if (acc <= 500) {
+          method = 'GPS con triangulacion celular';
+          confidence = 'MEDIA-ALTA';
+          nota = 'Posicion obtenida por combinacion de GPS y triangulacion de antenas. Precision de ' + Math.round(acc) + ' metros.';
+        } else {
+          method = 'Triangulacion de antenas celulares';
+          confidence = 'MEDIA';
+          nota = 'Posicion obtenida por triangulacion de torres celulares. Precision de ' + Math.round(acc) + ' metros. '
+            + 'Los registros de conectividad de la operadora pueden ser requeridos judicialmente para corroborar '
+            + 'el IMEI del dispositivo, la torre conectada y la hora exacta segun el reloj de la operadora.';
+        }
+        resolve({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          accuracy: Math.round(acc),
+          method: method,
+          confidence: confidence,
+          nota: nota,
+          timestamp: pos.timestamp
+        });
+      },
+      function() {
+        if (!done) { done = true; clearTimeout(timer); resolve(null); }
+      },
+      { timeout: 1800, enableHighAccuracy: true, maximumAge: 0 }
+    );
+  });
+}
+
 // ── CORE: HASH + SAVE ──
 async function saveEvidence(blob, filename, type, captureTime, opts) {
   opts = opts || {};
   var algo = opts.algo || 'SHA-256';
   var exp = opts.exp || document.getElementById('cam-exp').value || '';
   var nota = opts.nota || document.getElementById('cam-nota').value || '';
+  var geo = opts.geo || null;
   showProgress('Generando hash...', 20);
   var n = captureTime || getTime();
   var ab = await blob.arrayBuffer();
@@ -506,6 +591,7 @@ async function saveEvidence(blob, filename, type, captureTime, opts) {
     exp: exp,
     nota: nota,
     rfcToken: rfcToken,
+    geo: geo,
     thumb: null
   };
   if (type === 'photo' || type === 'image') {
@@ -546,6 +632,7 @@ function renderEvidences() {
           + '<span class="tag tag-ok">OK</span>'
           + (ev.ntpSynced ? '<span class="tag tag-ntp">NTP</span>' : '')
           + (ev.rfcToken ? '<span class="tag tag-rfc">RFC</span>' : '')
+          + (ev.geo ? '<span class="tag" style="background:rgba(100,220,100,0.1);color:#80e080;border:1px solid rgba(100,220,100,0.3)">GEO</span>' : '')
         + '</div>'
       + '</div>'
       + '<div class="ev-hash">SHA-256: ' + mh + '</div>'
@@ -585,7 +672,14 @@ function showDetail(id) {
       + (ev.exp ? '<div class="detail-row"><div class="detail-label">Expediente</div><div class="detail-val">' + ev.exp + '</div></div>' : '')
     + '</div>'
     + '<div class="detail-section">' + hashHtml + '</div>'
-    + (ev.rfcToken ? '<div class="detail-section"><div class="detail-label">Token RFC 3161</div><div class="detail-val" style="margin-top:4px;font-size:10px">' + ev.rfcToken + '</div></div>' : '');
+    + (ev.rfcToken ? '<div class="detail-section"><div class="detail-label">Token RFC 3161</div><div class="detail-val" style="margin-top:4px;font-size:10px">' + ev.rfcToken + '</div></div>' : '')
+    + (ev.geo ? '<div class="detail-section">'
+        + '<div class="detail-row"><div class="detail-label">Metodo de ubicacion</div><div class="detail-val">' + ev.geo.method + '</div></div>'
+        + '<div class="detail-row"><div class="detail-label">Confiabilidad</div><div class="detail-val">' + ev.geo.confidence + '</div></div>'
+        + '<div class="detail-row"><div class="detail-label">Coordenadas</div><div class="detail-val">' + ev.geo.lat.toFixed(6) + ', ' + ev.geo.lon.toFixed(6) + '</div></div>'
+        + '<div class="detail-row"><div class="detail-label">Precision</div><div class="detail-val">&#177;' + ev.geo.accuracy + ' metros</div></div>'
+        + '<div class="detail-row"><div class="detail-label">Nota pericial</div><div class="detail-val" style="color:#5a7090;font-size:10px;line-height:1.6">' + ev.geo.nota + '</div></div>'
+      + '</div>' : '');
   document.getElementById('modal-btns').innerHTML =
     '<button class="modal-btn blue" id="mb-copy">Copiar hash</button>'
     + '<button class="modal-btn gold" id="mb-cert">Certificado</button>';
@@ -646,6 +740,17 @@ function exportCert(id) {
     + '<h3>Hashes Criptograficos</h3><div class="hb"><table>' + hashRows + '</table></div>'
     + '<h3>Como Verificar</h3>'
     + '<p style="font-family:monospace;font-size:10px;color:#555;line-height:1.8">1. Obtener el archivo original<br>2. sha256sum archivo (Linux/Mac) o CertUtil -hashfile archivo SHA256 (Windows)<br>3. Comparar con el SHA-256 de este certificado</p>'
+    + (ev.geo ? '<h3>Geolocalizacion</h3>'
+      + '<table>'
+      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px;width:130px">Metodo</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.method + '</td></tr>'
+      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Confiabilidad</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.confidence + '</td></tr>'
+      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Latitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.lat.toFixed(8) + '</td></tr>'
+      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Longitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.lon.toFixed(8) + '</td></tr>'
+      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Precision</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">&#177;' + ev.geo.accuracy + ' metros</td></tr>'
+      + '</table>'
+      + '<div style="background:#f0f7ff;border-left:3px solid #0066cc;padding:10px 14px;margin:10px 0;font-family:monospace;font-size:10px;color:#004499;line-height:1.7">'
+      + '<strong>NOTA PERICIAL:</strong><br>' + ev.geo.nota
+      + '</div>' : '')
     + '</div><div class="foot">LexHash v1.0 | Ley 25.506 - CCCN art. 286 | ' + formatDate(getTime()) + '</div></div>'
     + '<script>window.onload=function(){window.print();}<\/script></body></html>';
   try {
