@@ -402,7 +402,7 @@ async function capturePhoto() {
     }
   }
 
-  // Capturar imagen
+  // Capturar imagen limpia sin marca de agua
   var canvas = document.getElementById('canvas');
   canvas.width = vid.videoWidth;
   canvas.height = vid.videoHeight;
@@ -410,15 +410,9 @@ async function capturePhoto() {
   if (facing === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
   ctx.drawImage(vid, 0, 0);
   if (facing === 'user') ctx.setTransform(1, 0, 0, 1, 0, 0);
-  var ts = formatDate(getTime());
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(0, canvas.height - 44, canvas.width, 44);
-  ctx.fillStyle = '#00d4ff';
-  ctx.font = 'bold ' + Math.max(14, Math.round(canvas.width / 60)) + 'px monospace';
-  ctx.fillText('LexHash * ' + ts, 10, canvas.height - 14);
   var n = getTime();
   canvas.toBlob(function(blob) {
-    // Descargar la foto automaticamente
+    // Descargar la foto SIN marca de agua
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
@@ -428,7 +422,7 @@ async function capturePhoto() {
     document.body.removeChild(a);
     setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
 
-    // Guardar evidencia con hash
+    // Guardar evidencia con hash de la foto ORIGINAL (sin marca)
     saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n, {
       geo: geo,
       useBtc: true
