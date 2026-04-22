@@ -376,9 +376,18 @@ async function startCamera() {
   }
 }
 
-function capturePhoto() {
+async function capturePhoto() {
   var vid = document.getElementById('cam-video');
   if (!vid.videoWidth) { toast('Camara no lista', 'err'); return; }
+
+  // 1. Pedir geo PRIMERO, antes de cualquier progress overlay
+  var geo = null;
+  if (document.getElementById('cam-geo').checked) {
+    toast('Obteniendo ubicacion...', '');
+    geo = await getGeoInfo();
+  }
+
+  // 2. Recien ahora capturar la imagen y procesar
   var canvas = document.getElementById('canvas');
   canvas.width = vid.videoWidth;
   canvas.height = vid.videoHeight;
@@ -393,12 +402,7 @@ function capturePhoto() {
   ctx.font = 'bold ' + Math.max(14, Math.round(canvas.width / 60)) + 'px monospace';
   ctx.fillText('LexHash * ' + ts, 10, canvas.height - 14);
   var n = getTime();
-  canvas.toBlob(async function(blob) {
-    var geo = null;
-    if (document.getElementById('cam-geo').checked) {
-      setProgress('Obteniendo ubicacion...', 10);
-      geo = await getGeoInfo();
-    }
+  canvas.toBlob(function(blob) {
     saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n, { geo: geo });
   }, 'image/jpeg', 0.95);
 }
@@ -480,12 +484,16 @@ document.getElementById('btn-hash').addEventListener('click', async function() {
   var algo = document.getElementById('opt-algo').value;
   var exp = document.getElementById('imp-exp').value;
   var useGeo = document.getElementById('opt-geo').checked;
-  showProgress('Iniciando...', 0);
+
+  // 1. Pedir geo PRIMERO, antes del progress overlay
   var geo = null;
   if (useGeo) {
-    setProgress('Obteniendo ubicacion...', 5);
+    toast('Obteniendo ubicacion...', '');
     geo = await getGeoInfo();
   }
+
+  // 2. Recien ahora mostrar progress y procesar
+  showProgress('Iniciando...', 0);
   for (var i = 0; i < files.length; i++) {
     setProgress('Hasheando: ' + files[i].name, Math.round(10 + i / files.length * 80));
     try {
