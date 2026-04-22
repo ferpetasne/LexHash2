@@ -382,27 +382,7 @@ async function capturePhoto() {
   var vid = document.getElementById('cam-video');
   if (!vid.videoWidth) { toast('Camara no lista', 'err'); return; }
 
-  // Si geo está OFF, preguntar
-  var useGeo = document.getElementById('cam-geo').checked;
-  if (!useGeo) {
-    if (!confirm('No activaste la geolocalización.\n\nLa evidencia será válida pero sin datos de ubicación.\n\n¿Querés continuar sin geo?')) {
-      return;
-    }
-  }
-
-  // Si geo está ON, pedirla primero
-  var geo = null;
-  if (useGeo) {
-    toast('Obteniendo ubicacion...', '');
-    geo = await getGeoInfo();
-    if (!geo) {
-      if (!confirm('No se pudo obtener la ubicación.\n\n¿Querés continuar sin geo o cancelar para reintentar?')) {
-        return;
-      }
-    }
-  }
-
-  // Capturar imagen limpia sin marca de agua
+  // INSTANTÁNEO: capturar el frame ahora mismo antes de cualquier otra cosa
   var canvas = document.getElementById('canvas');
   canvas.width = vid.videoWidth;
   canvas.height = vid.videoHeight;
@@ -411,8 +391,35 @@ async function capturePhoto() {
   ctx.drawImage(vid, 0, 0);
   if (facing === 'user') ctx.setTransform(1, 0, 0, 1, 0, 0);
   var n = getTime();
-  canvas.toBlob(function(blob) {
-    // Descargar la foto SIN marca de agua
+
+  // Flash visual para confirmar captura
+  var flash = document.createElement('div');
+  flash.style.cssText = 'position:fixed;inset:0;background:white;opacity:0.7;z-index:9999;pointer-events:none;transition:opacity 0.3s';
+  document.body.appendChild(flash);
+  setTimeout(function() { flash.style.opacity = '0'; setTimeout(function() { document.body.removeChild(flash); }, 300); }, 50);
+
+  toast('Foto capturada, procesando...', 'ok');
+
+  // DESPUÉS: geo, hash, bitcoin (en background, el frame ya está guardado)
+  canvas.toBlob(async function(blob) {
+
+    // Geo después de capturar
+    var useGeo = document.getElementById('cam-geo').checked;
+    var geo = null;
+    if (useGeo) {
+      geo = await getGeoInfo();
+      if (!geo) {
+        if (!confirm('No se pudo obtener la ubicación.\n\n¿Continuar sin geo?')) {
+          return;
+        }
+      }
+    } else {
+      if (!confirm('No activaste la geolocalización.\n\nLa evidencia será válida pero sin datos de ubicación.\n\n¿Continuar sin geo?')) {
+        return;
+      }
+    }
+
+    // Descargar foto original
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
@@ -422,11 +429,12 @@ async function capturePhoto() {
     document.body.removeChild(a);
     setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
 
-    // Guardar evidencia con hash de la foto ORIGINAL (sin marca)
-    saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n, {
+    // Hash + RFC + Bitcoin
+    await saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n, {
       geo: geo,
       useBtc: true
     });
+
   }, 'image/jpeg', 0.95);
 }
 
