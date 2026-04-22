@@ -380,14 +380,27 @@ async function capturePhoto() {
   var vid = document.getElementById('cam-video');
   if (!vid.videoWidth) { toast('Camara no lista', 'err'); return; }
 
-  // 1. Pedir geo PRIMERO, antes de cualquier progress overlay
-  var geo = null;
-  if (document.getElementById('cam-geo').checked) {
-    toast('Obteniendo ubicacion...', '');
-    geo = await getGeoInfo();
+  // Si geo está OFF, preguntar
+  var useGeo = document.getElementById('cam-geo').checked;
+  if (!useGeo) {
+    if (!confirm('No activaste la geolocalización.\n\nLa evidencia será válida pero sin datos de ubicación.\n\n¿Querés continuar sin geo?')) {
+      return;
+    }
   }
 
-  // 2. Recien ahora capturar la imagen y procesar
+  // Si geo está ON, pedirla primero
+  var geo = null;
+  if (useGeo) {
+    toast('Obteniendo ubicacion...', '');
+    geo = await getGeoInfo();
+    if (!geo) {
+      if (!confirm('No se pudo obtener la ubicación.\n\n¿Querés continuar sin geo o cancelar para reintentar?')) {
+        return;
+      }
+    }
+  }
+
+  // Capturar imagen
   var canvas = document.getElementById('canvas');
   canvas.width = vid.videoWidth;
   canvas.height = vid.videoHeight;
@@ -485,14 +498,27 @@ document.getElementById('btn-hash').addEventListener('click', async function() {
   var exp = document.getElementById('imp-exp').value;
   var useGeo = document.getElementById('opt-geo').checked;
 
-  // 1. Pedir geo PRIMERO, antes del progress overlay
+  // Si geo está OFF, preguntar si quiere continuar sin ella
+  if (!useGeo) {
+    if (!confirm('No activaste la geolocalización.\n\nLa evidencia será válida pero sin datos de ubicación.\n\n¿Querés continuar sin geo?')) {
+      return;
+    }
+  }
+
+  // Si geo está ON, pedirla primero
   var geo = null;
   if (useGeo) {
     toast('Obteniendo ubicacion...', '');
     geo = await getGeoInfo();
+    // Si falló la geo, preguntar si quiere continuar igual
+    if (!geo) {
+      if (!confirm('No se pudo obtener la ubicación.\nPuede ser por falta de señal, permiso denegado o hardware sin GPS.\n\n¿Querés continuar sin geo o cancelar para reintentar?')) {
+        return;
+      }
+    }
   }
 
-  // 2. Recien ahora mostrar progress y procesar
+  // Procesar
   showProgress('Iniciando...', 0);
   for (var i = 0; i < files.length; i++) {
     setProgress('Hasheando: ' + files[i].name, Math.round(10 + i / files.length * 80));
