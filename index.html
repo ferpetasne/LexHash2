@@ -773,17 +773,22 @@ function exportCert(id) {
     + '<h3>Hashes Criptograficos</h3><div class="hb"><table>' + hashRows + '</table></div>'
     + '<h3>Como Verificar</h3>'
     + '<p style="font-family:monospace;font-size:10px;color:#555;line-height:1.8">1. Obtener el archivo original<br>2. sha256sum archivo (Linux/Mac) o CertUtil -hashfile archivo SHA256 (Windows)<br>3. Comparar con el SHA-256 de este certificado</p>'
-    + (ev.geo ? '<h3>Geolocalizacion</h3>'
-      + '<table>'
-      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px;width:130px">Metodo</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.method + '</td></tr>'
-      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Confiabilidad</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.confidence + '</td></tr>'
-      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Latitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.lat.toFixed(8) + '</td></tr>'
-      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Longitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.lon.toFixed(8) + '</td></tr>'
-      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Precision</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">&#177;' + ev.geo.accuracy + ' metros</td></tr>'
-      + '</table>'
-      + '<div style="background:#f0f7ff;border-left:3px solid #0066cc;padding:10px 14px;margin:10px 0;font-family:monospace;font-size:10px;color:#004499;line-height:1.7">'
-      + '<strong>NOTA PERICIAL:</strong><br>' + ev.geo.nota
-      + '</div>' : '')
+    + '<h3>Geolocalizacion</h3>'
+    + (ev.geo
+      ? '<table>'
+        + '<tr><td style="color:#888;padding:5px 10px;font-size:10px;width:130px">Metodo</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.method + '</td></tr>'
+        + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Confiabilidad</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.confidence + '</td></tr>'
+        + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Latitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.lat.toFixed(8) + '</td></tr>'
+        + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Longitud</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + ev.geo.lon.toFixed(8) + '</td></tr>'
+        + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Precision</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">&#177;' + ev.geo.accuracy + ' metros</td></tr>'
+        + '</table>'
+        + '<div style="background:#f0f7ff;border-left:3px solid #0066cc;padding:10px 14px;margin:10px 0;font-family:monospace;font-size:10px;color:#004499;line-height:1.7"><strong>NOTA PERICIAL:</strong><br>' + ev.geo.nota + '</div>'
+      : '<div style="background:#fff8e1;border-left:3px solid #f4c542;padding:10px 14px;margin:4px 0;font-family:monospace;font-size:10px;color:#7a5f00;line-height:1.7">'
+        + 'Geolocalizacion no capturada. El toggle de ubicacion estaba desactivado al momento de la certificacion, '
+        + 'o el permiso fue denegado por el dispositivo/navegador. '
+        + 'Para incluir ubicacion en proximas evidencias, activar el toggle antes de hashear y conceder el permiso solicitado.'
+        + '</div>'
+    )
     + '</div><div class="foot">LexHash v1.0 | Ley 25.506 - CCCN art. 286 | ' + formatDate(getTime()) + '</div></div>'
     + '<script>window.onload=function(){window.print();}<\/script></body></html>';
   try {
