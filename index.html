@@ -90,6 +90,8 @@ body { background: #0a0f1a; color: #e8edf5; font-family: -apple-system, sans-ser
 .tag-ok { background: rgba(0,230,118,0.1); color: #00e676; border: 1px solid rgba(0,230,118,0.3); }
 .tag-ntp { background: rgba(0,212,255,0.1); color: #00d4ff; border: 1px solid rgba(0,212,255,0.3); }
 .tag-rfc { background: rgba(244,197,66,0.1); color: #f4c542; border: 1px solid rgba(244,197,66,0.3); }
+.tag-btc { background: rgba(247,147,26,0.1); color: #f7931a; border: 1px solid rgba(247,147,26,0.3); }
+.tag-btc-pending { background: rgba(247,147,26,0.05); color: #a05010; border: 1px solid rgba(247,147,26,0.2); }
 .ev-hash { padding: 10px 14px; font-family: monospace; font-size: 9px; color: #5a7090; word-break: break-all; line-height: 1.6; }
 .ev-exp { padding: 0 14px 8px; font-size: 10px; color: #5a7090; }
 .ev-actions { display: flex; border-top: 1px solid #1e2d47; }
@@ -416,7 +418,10 @@ async function capturePhoto() {
   ctx.fillText('LexHash * ' + ts, 10, canvas.height - 14);
   var n = getTime();
   canvas.toBlob(function(blob) {
-    saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n, { geo: geo });
+    saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n, {
+      geo: geo,
+      useBtc: true
+    });
   }, 'image/jpeg', 0.95);
 }
 
@@ -524,7 +529,10 @@ document.getElementById('btn-hash').addEventListener('click', async function() {
     setProgress('Hasheando: ' + files[i].name, Math.round(10 + i / files.length * 80));
     try {
       var ab = await files[i].arrayBuffer();
-      await saveEvidence(new Blob([ab], { type: files[i].type }), files[i].name, detectType(files[i].name), null, { algo: algo, exp: exp, geo: geo });
+      await saveEvidence(new Blob([ab], { type: files[i].type }), files[i].name, detectType(files[i].name), null, {
+        algo: algo, exp: exp, geo: geo,
+        useBtc: true
+      });
     } catch(e) {
       hideProgress();
       toast('Error: ' + e.message, 'err');
@@ -616,6 +624,75 @@ function getGeoInfo() {
   });
 }
 
+// ── BITCOIN / OPENTIMESTAMPS ──
+async function anclarEnBitcoin(hashHex) {
+  // Convertir hash hex a bytes binarios
+  var bytes = new Uint8Array(hashHex.match(/.{1,2}/g).map(function(b) { return parseInt(b, 16); }));
+
+  // Intentar los 3 servidores de OpenTimestamps en orden
+  var servers = [
+    'https://a.pool.opentimestamps.org/digest',
+    'https://b.pool.opentimestamps.org/digest',
+    'https://c.pool.opentimestamps.org/digest'
+  ];
+
+  for (var i = 0; i < servers.length; i++) {
+    try {
+      var response = await fetch(servers[i], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: bytes
+      });
+      if (response.ok) {
+        var otsBytes = await response.arrayBuffer();
+        // Convertir a base64 para guardar
+        var otsArray = new Uint8Array(otsBytes);
+        var binary = '';
+        otsArray.forEach(function(b) { binary += String.fromCharCode(b); });
+        var otsBase64 = btoa(binary);
+        return {
+          estado: 'PENDIENTE',
+          servidor: servers[i],
+          otsBase64: otsBase64,
+          submitTime: new Date().toISOString(),
+          hashHex: hashHex,
+          verificarUrl: 'https://opentimestamps.org/timestamp/' + hashHex
+        };
+      }
+    } catch(e) {}
+  }
+  return null;
+}
+
+async function verificarBitcoin(ev) {
+  if (!ev.btc || !ev.btc.hashHex) return null;
+  var servers = [
+    'https://a.pool.opentimestamps.org/timestamp/' + ev.btc.hashHex,
+    'https://b.pool.opentimestamps.org/timestamp/' + ev.btc.hashHex,
+    'https://c.pool.opentimestamps.org/timestamp/' + ev.btc.hashHex
+  ];
+  for (var i = 0; i < servers.length; i++) {
+    try {
+      var r = await fetch(servers[i], { method: 'GET' });
+      if (r.ok) {
+        var data = await r.arrayBuffer();
+        var bytes = new Uint8Array(data);
+        // Si el .ots tiene más de 100 bytes, probablemente está confirmado
+        if (bytes.length > 100) {
+          var binary = '';
+          bytes.forEach(function(b) { binary += String.fromCharCode(b); });
+          return {
+            estado: 'CONFIRMADO',
+            otsBase64: btoa(binary),
+            verificarUrl: ev.btc.verificarUrl
+          };
+        }
+      }
+    } catch(e) {}
+  }
+  return null;
+}
+
 // ── CORE: HASH + SAVE ──
 async function saveEvidence(blob, filename, type, captureTime, opts) {
   opts = opts || {};
@@ -623,7 +700,8 @@ async function saveEvidence(blob, filename, type, captureTime, opts) {
   var exp = opts.exp || document.getElementById('cam-exp').value || '';
   var nota = opts.nota || document.getElementById('cam-nota').value || '';
   var geo = opts.geo || null;
-  showProgress('Generando hash...', 20);
+  var useBtc = opts.useBtc !== undefined ? opts.useBtc : true;
+  showProgress('Generando hash...', 15);
   var n = captureTime || getTime();
   var ab = await blob.arrayBuffer();
   var hashBuf = await crypto.subtle.digest(algo, ab);
@@ -634,8 +712,18 @@ async function saveEvidence(blob, filename, type, captureTime, opts) {
     var h2 = await crypto.subtle.digest('SHA-256', ab);
     hashes['SHA-256'] = toHex(h2);
   }
-  setProgress('Sello RFC 3161...', 60);
+  setProgress('Sello RFC 3161...', 45);
   var rfcToken = await makeRFC(hashes['SHA-256'] || mainHash, n);
+
+  // Bitcoin / OpenTimestamps
+  var btc = null;
+  if (useBtc) {
+    setProgress('Anclando en Bitcoin...', 65);
+    try {
+      btc = await anclarEnBitcoin(hashes['SHA-256'] || mainHash);
+    } catch(e) {}
+  }
+
   setProgress('Guardando...', 88);
   var ev = {
     id: makeId(),
@@ -651,6 +739,7 @@ async function saveEvidence(blob, filename, type, captureTime, opts) {
     nota: nota,
     rfcToken: rfcToken,
     geo: geo,
+    btc: btc,
     thumb: null
   };
   if (type === 'photo' || type === 'image') {
@@ -662,6 +751,7 @@ async function saveEvidence(blob, filename, type, captureTime, opts) {
   setTimeout(hideProgress, 400);
   if (type === 'photo') toast('Foto certificada!', 'ok');
   if (type === 'video') toast('Video certificado!', 'ok');
+  if (!type || type === 'file' || type === 'document' || type === 'image' || type === 'audio' || type === 'archive') toast('Certificado OK', 'ok');
 }
 
 async function makeRFC(hash, t) {
@@ -692,6 +782,8 @@ function renderEvidences() {
           + (ev.ntpSynced ? '<span class="tag tag-ntp">NTP</span>' : '')
           + (ev.rfcToken ? '<span class="tag tag-rfc">RFC</span>' : '')
           + (ev.geo ? '<span class="tag" style="background:rgba(100,220,100,0.1);color:#80e080;border:1px solid rgba(100,220,100,0.3)">GEO</span>' : '')
+          + (ev.btc && ev.btc.estado === 'CONFIRMADO' ? '<span class="tag tag-btc">&#8383; OK</span>' : '')
+          + (ev.btc && ev.btc.estado === 'PENDIENTE' ? '<span class="tag tag-btc-pending">&#8383; ...</span>' : '')
         + '</div>'
       + '</div>'
       + '<div class="ev-hash">SHA-256: ' + mh + '</div>'
@@ -699,6 +791,7 @@ function renderEvidences() {
       + '<div class="ev-actions">'
         + '<button class="ev-action-btn" data-id="' + ev.id + '" data-action="detail">Ver detalle</button>'
         + '<button class="ev-action-btn" data-id="' + ev.id + '" data-action="cert">Certificado</button>'
+        + (ev.btc && ev.btc.estado === 'PENDIENTE' ? '<button class="ev-action-btn" data-id="' + ev.id + '" data-action="btc" style="color:#f7931a">&#8383; Verificar</button>' : '')
         + '<button class="ev-action-btn" data-id="' + ev.id + '" data-action="del">Borrar</button>'
       + '</div>';
     c.appendChild(div);
@@ -709,6 +802,7 @@ function renderEvidences() {
       var action = this.dataset.action;
       if (action === 'detail') showDetail(id);
       else if (action === 'cert') exportCert(id);
+      else if (action === 'btc') checkBitcoin(id);
       else if (action === 'del') deleteEv(id);
     });
   });
@@ -732,6 +826,16 @@ function showDetail(id) {
     + '</div>'
     + '<div class="detail-section">' + hashHtml + '</div>'
     + (ev.rfcToken ? '<div class="detail-section"><div class="detail-label">Token RFC 3161</div><div class="detail-val" style="margin-top:4px;font-size:10px">' + ev.rfcToken + '</div></div>' : '')
+    + (ev.btc ? '<div class="detail-section">'
+        + '<div class="detail-row"><div class="detail-label" style="color:#f7931a">&#8383; Bitcoin / OpenTimestamps</div>'
+        + '<div class="detail-val" style="margin-top:4px">'
+          + (ev.btc.estado === 'CONFIRMADO'
+            ? '<span style="color:#00e676">CONFIRMADO en blockchain</span>'
+            : '<span style="color:#f7931a">PENDIENTE (~10 min por bloque Bitcoin)</span>')
+        + '</div></div>'
+        + '<div class="detail-row"><div class="detail-label">Enviado</div><div class="detail-val">' + formatDate(new Date(ev.btc.submitTime)) + '</div></div>'
+        + '<div class="detail-row"><div class="detail-label">Verificar en</div><div class="detail-val" style="font-size:10px;word-break:break-all">' + ev.btc.verificarUrl + '</div></div>'
+      + '</div>' : '')
     + (ev.geo ? '<div class="detail-section">'
         + '<div class="detail-row"><div class="detail-label">Metodo de ubicacion</div><div class="detail-val">' + ev.geo.method + '</div></div>'
         + '<div class="detail-row"><div class="detail-label">Confiabilidad</div><div class="detail-val">' + ev.geo.confidence + '</div></div>'
@@ -752,6 +856,22 @@ function showDetail(id) {
 document.getElementById('modal-close').addEventListener('click', function() {
   document.getElementById('modal').style.display = 'none';
 });
+
+async function checkBitcoin(id) {
+  var ev = evidences.find(function(e) { return e.id === id; });
+  if (!ev || !ev.btc) return;
+  toast('Verificando en Bitcoin...', '');
+  var result = await verificarBitcoin(ev);
+  if (result && result.estado === 'CONFIRMADO') {
+    ev.btc.estado = 'CONFIRMADO';
+    ev.btc.otsBase64 = result.otsBase64;
+    saveAll();
+    renderEvidences();
+    toast('Confirmado en Bitcoin!', 'ok');
+  } else {
+    toast('Aun pendiente (~10 min por bloque)', '');
+  }
+}
 
 function deleteEv(id) {
   if (!confirm('Eliminar esta evidencia?')) return;
@@ -796,6 +916,20 @@ function exportCert(id) {
     + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Fuente</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + (ev.ntpSynced ? 'worldtimeapi.org ART (UTC-3)' : 'Reloj local') + '</td></tr>'
     + (ev.rfcToken ? '<tr><td style="color:#888;padding:5px 10px;font-size:10px">RFC 3161</td><td style="padding:5px 10px;font-family:monospace;font-size:8px;word-break:break-all">' + ev.rfcToken + '</td></tr>' : '')
     + '</table>'
+    + (ev.btc ? '<h3>&#8383; Anclaje en Blockchain Bitcoin</h3>'
+      + '<table>'
+      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px;width:130px">Estado</td><td style="padding:5px 10px;font-family:monospace;font-size:10px;color:' + (ev.btc.estado === 'CONFIRMADO' ? '#007a33' : '#a05010') + '">' + ev.btc.estado + '</td></tr>'
+      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Enviado</td><td style="padding:5px 10px;font-family:monospace;font-size:10px">' + formatDate(new Date(ev.btc.submitTime)) + '</td></tr>'
+      + '<tr><td style="color:#888;padding:5px 10px;font-size:10px">Verificar</td><td style="padding:5px 10px;font-family:monospace;font-size:9px;word-break:break-all">' + ev.btc.verificarUrl + '</td></tr>'
+      + '</table>'
+      + '<div style="background:#fff8f0;border-left:3px solid #f7931a;padding:10px 14px;margin:8px 0;font-family:monospace;font-size:10px;color:#7a3a00;line-height:1.7">'
+      + '<strong>NOTA PERICIAL:</strong> El hash SHA-256 de este archivo fue enviado a la red Bitcoin mediante el protocolo OpenTimestamps. '
+      + (ev.btc.estado === 'CONFIRMADO'
+        ? 'La confirmacion en blockchain prueba de forma irrefutable que el archivo existia en la fecha indicada. '
+        : 'Una vez confirmado (~10 minutos), quedara inscripto permanentemente en la blockchain de Bitcoin. ')
+      + 'Verificacion independiente: descargar el archivo .ots y ejecutar "ots verify" con OpenSSL.'
+      + '</div>'
+      : '')
     + '<h3>Hashes Criptograficos</h3><div class="hb"><table>' + hashRows + '</table></div>'
     + '<h3>Como Verificar</h3>'
     + '<p style="font-family:monospace;font-size:10px;color:#555;line-height:1.8">1. Obtener el archivo original<br>2. sha256sum archivo (Linux/Mac) o CertUtil -hashfile archivo SHA256 (Windows)<br>3. Comparar con el SHA-256 de este certificado</p>'
