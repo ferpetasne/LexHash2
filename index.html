@@ -418,6 +418,17 @@ async function capturePhoto() {
   ctx.fillText('LexHash * ' + ts, 10, canvas.height - 14);
   var n = getTime();
   canvas.toBlob(function(blob) {
+    // Descargar la foto automaticamente
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'LexHash_foto_' + n.getTime() + '.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+
+    // Guardar evidencia con hash
     saveEvidence(blob, 'LexHash_foto_' + n.getTime() + '.jpg', 'photo', n, {
       geo: geo,
       useBtc: true
@@ -440,7 +451,19 @@ function startRecording() {
   recorder.onstop = function() {
     var ext = (recorder.mimeType || '').indexOf('mp4') >= 0 ? 'mp4' : 'webm';
     var blob = new Blob(recChunks, { type: recorder.mimeType || 'video/webm' });
-    saveEvidence(blob, 'LexHash_video_' + recStart.getTime() + '.' + ext, 'video', recStart);
+    var fname = 'LexHash_video_' + recStart.getTime() + '.' + ext;
+
+    // Descargar el video automaticamente
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+
+    saveEvidence(blob, fname, 'video', recStart);
     recChunks = [];
   };
   recorder.start(500);
