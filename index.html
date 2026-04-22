@@ -514,13 +514,38 @@ document.getElementById('btn-hash').addEventListener('click', async function() {
 });
 
 // ── GEOLOCALIZACIÓN ──
+
+// Cuando el usuario activa el toggle, pedir permiso inmediatamente
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('cam-geo').addEventListener('change', function() {
+    if (this.checked) requestGeoPermission();
+  });
+  document.getElementById('opt-geo').addEventListener('change', function() {
+    if (this.checked) requestGeoPermission();
+  });
+});
+
+function requestGeoPermission() {
+  if (!navigator.geolocation) {
+    toast('Geolocalizacion no disponible', 'err');
+    return;
+  }
+  toast('Activando ubicacion...', '');
+  // Hacer una primera llamada solo para disparar el dialogo de permiso
+  navigator.geolocation.getCurrentPosition(
+    function() { toast('Ubicacion activada', 'ok'); },
+    function() { toast('Permiso de ubicacion denegado', 'err'); },
+    { timeout: 15000, enableHighAccuracy: true, maximumAge: 0 }
+  );
+}
+
 function getGeoInfo() {
   return new Promise(function(resolve) {
     if (!navigator.geolocation) { resolve(null); return; }
     var done = false;
     var timer = setTimeout(function() {
       if (!done) { done = true; resolve(null); }
-    }, 2000);
+    }, 15000);
     navigator.geolocation.getCurrentPosition(
       function(pos) {
         if (done) return;
@@ -560,7 +585,7 @@ function getGeoInfo() {
       function() {
         if (!done) { done = true; clearTimeout(timer); resolve(null); }
       },
-      { timeout: 1800, enableHighAccuracy: true, maximumAge: 0 }
+      { timeout: 14000, enableHighAccuracy: true, maximumAge: 10000 }
     );
   });
 }
